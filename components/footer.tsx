@@ -22,6 +22,7 @@ export default function Footer() {
           
           {/* Left Section - Description - Takes more space */}
           <div className="md:flex-[1] space-y-3">
+            <Image src="/brand-logo.png" alt="Parcare Aeroport Iași" width={80} height={80} className="bg-white rounded-md p-1 object-contain" />
             <h3 className="text-lg font-semibold mb-4 text-white inline-block">Despre noi</h3>
             <p className="text-gray-300 text-sm leading-relaxed">
               Oferim servicii de parcare securizată la doar 500 metri de aeroportul Henri Coandă. 
@@ -89,7 +90,7 @@ export default function Footer() {
             </div>
               {/* Phone */}
               <div className="flex items-center space-x-3">
-                <Phone size={16} className="text-[#ee7f1a] flex-shrink-0" />
+                <Phone size={16} className="text-[#046FB6] flex-shrink-0" />
                 <a href="tel:+40742039955" className="text-gray-300 hover:text-white transition-colors text-sm">
                   0742.039.955
                 </a>
@@ -97,7 +98,7 @@ export default function Footer() {
               
               {/* Email */}
               <div className="flex items-center space-x-3">
-                <Mail size={16} className="text-[#ee7f1a] flex-shrink-0" />
+                <Mail size={16} className="text-[#046FB6] flex-shrink-0" />
                 <a href="mailto:contact.parcareaeroport@gmail.com" className="text-gray-300 hover:text-white transition-colors text-sm">
                   contact.parcareaeroport@gmail.com
                 </a>
@@ -109,7 +110,7 @@ export default function Footer() {
                 
                 {/* Google Maps */}
                 <div className="flex items-center space-x-3">
-                  <MapPin size={16} className="text-[#ee7f1a] flex-shrink-0" />
+                  <MapPin size={16} className="text-[#046FB6] flex-shrink-0" />
                   <a 
                     href="https://maps.app.goo.gl/GhoVMNWvst6BamHx5?g_st=aw" 
                     target="_blank" 
@@ -122,7 +123,7 @@ export default function Footer() {
                 
                 {/* Waze */}
                 <div className="flex items-center space-x-3">
-                  <Navigation size={16} className="text-[#ee7f1a] flex-shrink-0" />
+                  <Navigation size={16} className="text-[#046FB6] flex-shrink-0" />
                   <a 
                     href="https://waze.com/ul?ll=44.575660,26.069918&navigate=yes" 
                     target="_blank" 
@@ -175,7 +176,7 @@ export default function Footer() {
         {/* Scroll to top button */}
         <button
           onClick={scrollToTop}
-          className="fixed bottom-4 right-4 sm:bottom-8 sm:right-8 bg-[#ee7f1a] hover:bg-[#d67016] text-white rounded-full p-3 sm:p-4 shadow-lg transition-all duration-300 hover:scale-110 z-[9999]"
+          className="fixed bottom-4 right-4 sm:bottom-8 sm:right-8 bg-[#046FB6] hover:bg-[#03588F] text-white rounded-full p-3 sm:p-4 shadow-lg transition-all duration-300 hover:scale-110 z-[9999]"
           aria-label="Scroll to top"
         >
           <ArrowUp size={20} className="sm:w-6 sm:h-6" />

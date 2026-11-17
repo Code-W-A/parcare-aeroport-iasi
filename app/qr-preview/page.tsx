@@ -83,7 +83,7 @@ export default async function QrPreviewPage({
               Booking: <span className="font-mono">{bookingNumber}</span>
             </div>
             <a
-              className="text-sm font-medium text-[#ee7f1a] underline underline-offset-2 hover:no-underline"
+              className="text-sm font-medium text-[#046FB6] underline underline-offset-2 hover:no-underline"
               href={imgSrc}
               target="_blank"
               rel="noreferrer"

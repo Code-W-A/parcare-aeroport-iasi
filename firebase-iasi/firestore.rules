@@ -10,7 +10,7 @@ service cloud.firestore {
         && get(/databases/$(database)/documents/staffAccess/$(request.auth.uid)).data.role == request.auth.token.role;
     }
     function notificationOwner(uid) {
-      return owner(uid) && (request.auth.token.get('firebase', {}).get('sign_in_provider', '') == 'anonymous' || staff());
+      return owner(uid) && (request.auth.token.get('firebase', {}).get('sign_in_provider', '') == 'anonymous' || request.auth.token.get('customerSession', false) == true || staff());
     }
     function bounded(max) { return request.query.limit != null && request.query.limit <= max; }
     match /publicConfig/{id} { allow get: if id == 'booking'; }

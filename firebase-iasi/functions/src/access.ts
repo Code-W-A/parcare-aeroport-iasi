@@ -31,7 +31,10 @@ export async function authenticate(req: Request): Promise<DecodedIdToken> {
 }
 export async function assertGuest(req: Request) {
   const token = await authenticate(req);
-  if (token.firebase.sign_in_provider !== "anonymous")
+  if (
+    token.firebase.sign_in_provider !== "anonymous" &&
+    token.customerSession !== true
+  )
     throw new ApiError(
       403,
       "FORBIDDEN",

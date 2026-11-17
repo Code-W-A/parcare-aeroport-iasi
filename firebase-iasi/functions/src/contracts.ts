@@ -1,7 +1,16 @@
+import type { BillingDetails, CustomerDetails } from "./booking-details";
 /** Stage 1 API contract. Money, bookings and loyalty mutations arrive in stage 2. */
+export type SavedCar = { id: string; plate: string; model: string; type: string };
 export type GuestProfile = {
+  firstName?: string;
+  lastName?: string;
+  cars?: SavedCar[];
+  preferredCarId?: string | null;
+  lastUsedCarId?: string | null;
+  lastPersons?: number;
   uid: string;
   kind: "guest";
+  savedBilling?: BillingDetails | null;
   email: string;
   phone: string;
   name: string;
@@ -26,6 +35,11 @@ export type BookingStatus = "requested" | "confirmed" | "cancelled";
 export type PaymentStatus = "unpaid" | "paid_at_site" | "paid_online";
 export type MovementStatus = "waiting" | "parked" | "departed";
 export type BookingConfig = {
+  loyaltyVersion?: 1 | 2;
+  reservationsPerFreeDay?: number;
+  capacity?: number;
+  onlineDiscountPercent?: number;
+  atParkingDiscountPercent?: number;
   revision: number;
   configured: boolean;
   timeZone: "Europe/Bucharest";
@@ -40,6 +54,7 @@ export type BookingConfig = {
   departureReminderMinutes: number;
 };
 export type Pricing = {
+  discountSource?: "method" | "loyalty" | "none";
   manualAdjustmentBani: number;
   discountPercent: number;
   days: number;
@@ -50,6 +65,7 @@ export type Pricing = {
   configRevision: number;
 };
 export type Quote = Pricing & {
+  freeDayApplied?: boolean;
   expiresAt: string;
   configRevision: number;
   benefitRevision: number;
@@ -58,6 +74,9 @@ export type Quote = Pricing & {
   departure: string;
 };
 export type BookingInput = {
+  paymentMethod?: "online" | "at_parking";
+  savedCarId?: string;
+  customerDetails?: CustomerDetails;
   name: string;
   phone: string;
   licensePlate: string;
@@ -66,11 +85,13 @@ export type BookingInput = {
   departure: string;
 };
 export type BookingRecord = BookingInput & {
+  loyaltyV2?: { enabled: boolean; threshold: number; freeDay: "none" | "reserved" | "consumed" | "returned"; awarded: boolean; reversed: boolean; methodDiscount: number };
   id: string;
   code: string;
   ownerUid: string | null;
   customerId: string;
   source: "app" | "manual" | "website";
+  cancellationRequest?: { status: "pending" | "approved" | "rejected"; reason: string; response?: string };
   bookingStatus: BookingStatus;
   paymentStatus: PaymentStatus;
   movementStatus: MovementStatus;
@@ -87,7 +108,10 @@ export type BookingRecord = BookingInput & {
   paidAmountBani: number;
   priceDifferenceBani: number;
 };
+export type FreeDayState = { points: number; progress: number; available: number; reserved: number; debt: number };
 export type LoyaltyRecord = {
+  freeDays?: FreeDayState;
+  legacyLoyalty?: { points: number; benefitStatus: string };
   id: string;
   ownerUid: string | null;
   name: string;

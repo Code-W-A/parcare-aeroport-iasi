@@ -263,7 +263,7 @@ export default function PricingTable() {
             </div>
 
             <Link href="/#rezerva-formular">
-              <Button className="bg-[#ee7f1a] hover:bg-[#d67016] rounded-full px-8 py-4 h-auto shadow-md hover:shadow-lg flex items-center gap-2 text-white font-medium transition-all duration-200 hover:scale-105">
+              <Button className="bg-[#046FB6] hover:bg-[#03588F] rounded-full px-8 py-4 h-auto shadow-md hover:shadow-lg flex items-center gap-2 text-white font-medium transition-all duration-200 hover:scale-105">
                 <Calendar className="h-5 w-5" />
                 <span>REZERVĂ ACUM</span>
               </Button>

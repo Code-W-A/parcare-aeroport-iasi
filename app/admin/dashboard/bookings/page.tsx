@@ -1194,7 +1194,7 @@ function BookingsPageContent() {
           <span>{booking.apiBookingNumber || booking.id.substring(0, 6)}</span>
         )}
         {isMobileAppBooking(booking) && (
-          <Badge className="w-fit self-start border-0 bg-[#3D2067] text-white text-xs hover:bg-[#3D2067]">
+          <Badge className="w-fit self-start border-0 bg-[#046FB6] text-white text-xs hover:bg-[#046FB6]">
             Mobile
           </Badge>
         )}
@@ -3996,7 +3996,7 @@ function BookingsPageContent() {
                     <PopoverTrigger asChild>
                       <Button
                         variant="outline"
-                        className="w-full justify-start text-left font-normal h-10 border border-gray-200 bg-transparent hover:border-[#ff0066] focus:border-[#ff0066] focus:ring-2 focus:ring-[#ff0066]/20 hover:bg-transparent focus:bg-transparent text-gray-900 hover:text-gray-900"
+                        className="w-full justify-start text-left font-normal h-10 border border-gray-200 bg-transparent hover:border-[#046FB6] focus:border-[#046FB6] focus:ring-2 focus:ring-[#046FB6]/20 hover:bg-transparent focus:bg-transparent text-gray-900 hover:text-gray-900"
                         type="button"
                       >
                         <Clock className="mr-2 h-4 w-4 text-gray-500" />
@@ -4144,7 +4144,7 @@ function BookingsPageContent() {
                   <PopoverTrigger asChild>
                     <Button 
                       variant="outline" 
-                      className="w-full justify-start text-left font-normal h-10 border border-gray-200 bg-transparent hover:border-[#ff0066] focus:border-[#ff0066] focus:ring-2 focus:ring-[#ff0066]/20 hover:bg-transparent focus:bg-transparent text-gray-900 hover:text-gray-900" 
+                      className="w-full justify-start text-left font-normal h-10 border border-gray-200 bg-transparent hover:border-[#046FB6] focus:border-[#046FB6] focus:ring-2 focus:ring-[#046FB6]/20 hover:bg-transparent focus:bg-transparent text-gray-900 hover:text-gray-900" 
                       type="button"
                     >
                       <Clock className="mr-2 h-4 w-4 text-gray-500" />
@@ -4182,7 +4182,7 @@ function BookingsPageContent() {
                   <PopoverTrigger asChild>
                     <Button 
                       variant="outline" 
-                      className="w-full justify-start text-left font-normal h-10 border border-gray-200 bg-transparent hover:border-[#ff0066] focus:border-[#ff0066] focus:ring-2 focus:ring-[#ff0066]/20 hover:bg-transparent focus:bg-transparent text-gray-900 hover:text-gray-900" 
+                      className="w-full justify-start text-left font-normal h-10 border border-gray-200 bg-transparent hover:border-[#046FB6] focus:border-[#046FB6] focus:ring-2 focus:ring-[#046FB6]/20 hover:bg-transparent focus:bg-transparent text-gray-900 hover:text-gray-900" 
                       type="button"
                     >
                       <Clock className="mr-2 h-4 w-4 text-gray-500" />

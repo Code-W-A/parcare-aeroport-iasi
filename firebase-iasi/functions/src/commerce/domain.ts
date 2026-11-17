@@ -1,3 +1,8 @@
+import {
+  detailErrors,
+  cleanDetails,
+  type CustomerDetails,
+} from "../booking-details";
 import { createHash } from "node:crypto";
 import { Timestamp } from "firebase-admin/firestore";
 import { z } from "zod";
@@ -27,6 +32,11 @@ export const defaultConfig: BookingConfig = {
 };
 export const configSchema = z
   .object({
+    capacity: z.number().int().min(1).max(100000).optional(),
+    onlineDiscountPercent: z.number().int().min(0).max(100).default(0),
+    atParkingDiscountPercent: z.number().int().min(0).max(100).default(0),
+    loyaltyVersion: z.union([z.literal(1), z.literal(2)]).optional(),
+    reservationsPerFreeDay: z.number().int().min(1).max(100).default(4),
     expectedRevision: z.number().int().nonnegative(),
     dailyRateBani: z.number().int().min(1).max(100_000_000),
     requestsEnabled: z.boolean(),
@@ -50,7 +60,39 @@ export const periodSchema = z.object({
   arrival: localDate,
   departure: localDate,
 });
+export const customerDetailsSchema = z
+  .object({
+    firstName: z.string().trim().max(100),
+    lastName: z.string().trim().max(100),
+    email: z.string().trim().email().max(254),
+    numberOfPersons: z.number().int().positive().max(Number.MAX_SAFE_INTEGER),
+    carModel: z.string().trim().max(100),
+    carType: z.string().trim().max(100),
+    billingType: z.enum(["individual", "company"]),
+    address: z.string().trim().max(300),
+    country: z.string().trim().max(100),
+    county: z.string().trim().max(100),
+    city: z.string().trim().max(100),
+    postalCode: z.string().trim().max(32).default(""),
+    company: z.string().trim().max(200),
+    companyVAT: z.string().trim().max(50),
+    companyReg: z.string().trim().max(100),
+    companyAddress: z.string().trim().max(300),
+    orderNotes: z.string().trim().max(1000),
+  })
+  .strict()
+  .superRefine((value, ctx) => {
+    for (const [key, message] of Object.entries(detailErrors(value)))
+      ctx.addIssue({ code: "custom", path: [key], message });
+  })
+  .transform((value) => cleanDetails(value as CustomerDetails));
 export const inputSchema = periodSchema.extend({
+  paymentMethod: z.enum(["online", "at_parking"]).optional(),
+  customerDetails: customerDetailsSchema.optional(),
+  savedCarId: z
+    .string()
+    .regex(/^[A-Za-z0-9_-]{1,128}$/)
+    .optional(),
   name: z.string().trim().min(3).max(100),
   phone: phoneSchema,
   licensePlate: z

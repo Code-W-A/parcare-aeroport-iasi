@@ -405,7 +405,7 @@ function ConfirmationContent() {
                     href="https://maps.app.goo.gl/GhoVMNWvst6BamHx5?g_st=aw"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-2 bg-[#ee7f1a] hover:bg-[#d67016] text-white px-4 py-2 rounded-md transition-all duration-200 font-medium text-sm"
+                    className="inline-flex items-center gap-2 bg-[#046FB6] hover:bg-[#03588F] text-white px-4 py-2 rounded-md transition-all duration-200 font-medium text-sm"
                   >
                     Google Maps
                   </a>

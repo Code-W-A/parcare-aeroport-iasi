@@ -33,7 +33,7 @@ export function DemoLogin({ onLogin }: { onLogin: () => void }) {
   return (
     <main className="login">
       <form className="panel login-card" noValidate onSubmit={submit}>
-        <span className="brand-icon"><CarFront size={24} /></span>
+        <span className="brand-icon"><img src="/brand-logo.png" alt="Parcare Aeroport Iași" width={40} height={40} /></span>
         <h1>Parcare Aeroport Iași</h1>
         <p>Autentificare în panoul de administrare</p>
         <div className="notice"><strong>Cont demonstrativ</strong><small>Acces simulat, cu date fictive.</small><small>Email: {demoEmail}</small><small>Parolă: {demoPassword}</small></div>

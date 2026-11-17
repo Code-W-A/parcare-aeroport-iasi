@@ -18,9 +18,11 @@ import type { Page, ReportMovement } from "../contracts";
 export type Params = Record<string, unknown>;
 const text = (p: Params, key: string) =>
   typeof p[key] === "string" ? (p[key] as string) : "";
-const invalidCursor = () => new ApiError(400, "VALIDATION_ERROR", "Cursor invalid.");
+const invalidCursor = () =>
+  new ApiError(400, "VALIDATION_ERROR", "Cursor invalid.");
 function cursorTimestamp(value: unknown): Timestamp {
-  if (typeof value !== "number" || !Number.isFinite(value)) throw invalidCursor();
+  if (typeof value !== "number" || !Number.isFinite(value))
+    throw invalidCursor();
   // Firestore timestamps only cover years 0001–9999. Convert inside the guard
   // so malformed client input never becomes a retryable server error.
   try {
@@ -30,7 +32,10 @@ function cursorTimestamp(value: unknown): Timestamp {
   }
 }
 function cursorScalar(value: unknown): string | number {
-  if (typeof value === "string" || (typeof value === "number" && Number.isFinite(value)))
+  if (
+    typeof value === "string" ||
+    (typeof value === "number" && Number.isFinite(value))
+  )
     return value;
   throw invalidCursor();
 }
@@ -79,7 +84,8 @@ export async function page<T>(
   let ordered = query.orderBy(sort, direction);
   for (const field of extraFields) ordered = ordered.orderBy(field, "asc");
   ordered = ordered.orderBy(FieldPath.documentId(), direction);
-  if (p.cursor !== undefined && typeof p.cursor !== "string") throw invalidCursor();
+  if (p.cursor !== undefined && typeof p.cursor !== "string")
+    throw invalidCursor();
   if (text(p, "cursor")) {
     let cursor;
     try {
@@ -91,7 +97,9 @@ export async function page<T>(
       throw new ApiError(400, "VALIDATION_ERROR", "Cursor invalid.");
     }
     if (
-      !cursor || typeof cursor !== "object" || Array.isArray(cursor) ||
+      !cursor ||
+      typeof cursor !== "object" ||
+      Array.isArray(cursor) ||
       cursor.q !== fingerprint ||
       typeof cursor.id !== "string" ||
       !Array.isArray(cursor.extra) ||
@@ -142,7 +150,11 @@ export function adminQuery(p: Params) {
     raw = text(p, "search");
   const { from, to } = dayRange(p);
   if (status) {
-    if (["requested", "confirmed", "cancelled"].includes(status))
+    if (status === "cancellation_pending")
+      conditions.push(
+        Filter.where("cancellationRequest.status", "==", "pending"),
+      );
+    else if (["requested", "confirmed", "cancelled"].includes(status))
       conditions.push(Filter.where("bookingStatus", "==", status));
     else if (["waiting", "parked", "departed"].includes(status))
       conditions.push(

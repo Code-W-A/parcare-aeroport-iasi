@@ -31,7 +31,7 @@ export default function ContactMap() {
                 href="https://maps.app.goo.gl/GhoVMNWvst6BamHx5?g_st=aw"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 bg-[#ee7f1a] hover:bg-[#d67016] text-white px-6 py-3 rounded-md transition-all duration-200 font-medium shadow-md hover:shadow-lg"
+                className="inline-flex items-center gap-2 bg-[#046FB6] hover:bg-[#03588F] text-white px-6 py-3 rounded-md transition-all duration-200 font-medium shadow-md hover:shadow-lg"
               >
                 📍 Google Maps
               </a>

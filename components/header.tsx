@@ -47,7 +47,7 @@ export default function Header() {
           <Link href="/" className="flex items-center" title="OTP Parking" aria-label="Acasă">
             {/* Mobile logo */}
             <Image
-              src="/otp_parking.png"
+              src="/brand-logo.png"
               alt="OTP Parking Logo"
               width={170}
               height={55}
@@ -56,7 +56,7 @@ export default function Header() {
             />
             {/* Desktop logo */}
             <Image
-              src="/otp_parking.png"
+              src="/brand-logo.png"
               alt="OTP Parking Logo"
               width={280}
               height={80}
@@ -80,8 +80,8 @@ export default function Header() {
                 >
                   <Button
                     variant="ghost"
-                    className={`flex items-center gap-1 rounded-md text-sm font-medium transition-all duration-200 text-[#13005a] hover:bg-[#13005a]/10 hover:text-[#13005a] hover:scale-105 ${
-                      pathname === item.href ? "bg-[#13005a]/20 text-[#13005a]" : ""
+                    className={`flex items-center gap-1 rounded-md text-sm font-medium transition-all duration-200 text-[#046FB6] hover:bg-[#046FB6]/10 hover:text-[#046FB6] hover:scale-105 ${
+                      pathname === item.href ? "bg-[#046FB6]/20 text-[#046FB6]" : ""
                     }`}
                   >
                     {item.name}
@@ -93,7 +93,7 @@ export default function Header() {
           {/* Buton Secundar - Border alb + Text alb + Fundal transparent */}
           <Link href="/tarife">
             <Button
-              className="group bg-transparent hover:bg-[#13005a] text-[#13005a] border-2 border-[#13005a] hover:border-[#13005a] rounded-md text-sm font-medium px-3 md:px-4 py-2 h-auto transition-all duration-200 shadow-sm hover:shadow-md"
+              className="group bg-transparent hover:bg-[#046FB6] text-[#046FB6] border-2 border-[#046FB6] hover:border-[#046FB6] rounded-md text-sm font-medium px-3 md:px-4 py-2 h-auto transition-all duration-200 shadow-sm hover:shadow-md"
               aria-label="Vezi tarifele"
             >
               <span className="group-hover:text-white transition-colors duration-200">Tarife</span>
@@ -102,7 +102,7 @@ export default function Header() {
           {/* Buton Principal - Fundal roz + Text alb */}
           <Link
             href="tel:+40742039955"
-            className="bg-[#ee7f1a] hover:bg-[#d67016] rounded-md text-sm font-medium shadow-md hover:shadow-lg px-3 md:px-4 py-2 h-auto flex items-center text-white transition-all duration-200"
+            className="bg-[#046FB6] hover:bg-[#03588F] rounded-md text-sm font-medium shadow-md hover:shadow-lg px-3 md:px-4 py-2 h-auto flex items-center text-white transition-all duration-200"
             aria-label="Contact rapid telefonic"
           >
             <Phone className="h-4 w-4 md:mr-2" />
@@ -110,7 +110,7 @@ export default function Header() {
           </Link>
           <Button
             variant="ghost"
-            className="md:hidden rounded-full text-[#13005a] hover:bg-[#13005a]/10 p-4 w-14 h-14"
+            className="md:hidden rounded-full text-[#046FB6] hover:bg-[#046FB6]/10 p-4 w-14 h-14"
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
             aria-expanded={isMobileMenuOpen}
             aria-controls="mobile-menu"
@@ -152,7 +152,7 @@ export default function Header() {
                 title="OTP Parking"
               >
                 <Image
-                  src="/otp_parking.png"
+                  src="/brand-logo.png"
                   alt="OTP Parking Logo"
                   width={100}
                   height={35}
@@ -184,8 +184,8 @@ export default function Header() {
                     >
                       <Button
                         variant="ghost"
-                        className={`flex items-center justify-start w-full rounded-lg text-left h-auto py-3 transition-all duration-200 hover:bg-[#13005a]/10 hover:text-[#13005a] hover:pl-4 ${
-                          pathname === item.href ? "bg-[#13005a]/10 text-[#13005a]" : ""
+                        className={`flex items-center justify-start w-full rounded-lg text-left h-auto py-3 transition-all duration-200 hover:bg-[#046FB6]/10 hover:text-[#046FB6] hover:pl-4 ${
+                          pathname === item.href ? "bg-[#046FB6]/10 text-[#046FB6]" : ""
                         }`}
                       >
                         <span className="font-medium">{item.name}</span>
@@ -198,7 +198,7 @@ export default function Header() {
               {/* Butoane în sidebar mobil */}
               <div className="space-y-3 pt-4 border-t border-gray-100">
                 <Link href="/tarife" onClick={() => setIsMobileMenuOpen(false)}>
-                  <Button className="w-full bg-transparent hover:bg-[#13005a] text-[#13005a] hover:text-white border-2 border-[#13005a] hover:border-[#13005a] rounded-md text-sm font-medium py-3 transition-all duration-200">
+                  <Button className="w-full bg-transparent hover:bg-[#046FB6] text-[#046FB6] hover:text-white border-2 border-[#046FB6] hover:border-[#046FB6] rounded-md text-sm font-medium py-3 transition-all duration-200">
                     Tarife
                   </Button>
                 </Link>
@@ -207,7 +207,7 @@ export default function Header() {
                   onClick={() => setIsMobileMenuOpen(false)}
                   className="block"
                 >
-                  <Button className="w-full bg-[#ee7f1a] hover:bg-[#d67016] text-white rounded-md text-sm font-medium py-3 transition-all duration-200 shadow-md hover:shadow-lg">
+                  <Button className="w-full bg-[#046FB6] hover:bg-[#03588F] text-white rounded-md text-sm font-medium py-3 transition-all duration-200 shadow-md hover:shadow-lg">
                     <Phone className="h-4 w-4 mr-2" />
                     Contact
                   </Button>
@@ -220,7 +220,7 @@ export default function Header() {
                     href="https://www.instagram.com/parcare_aeroport?igsh=MXV5d2d2M3NibHh0Yg%3D%3D&utm_source=qr"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-gray-400 hover:text-[#13005a] transition-all duration-200 hover:scale-110"
+                    className="text-gray-400 hover:text-[#046FB6] transition-all duration-200 hover:scale-110"
                     aria-label="Instagram"
                     title="Urmărește-ne pe Instagram"
                   >
@@ -246,7 +246,7 @@ export default function Header() {
                     href="https://www.facebook.com/share/1EYNt8Zp19/?mibextid=wwXIfr"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-gray-400 hover:text-[#13005a] transition-all duration-200 hover:scale-110"
+                    className="text-gray-400 hover:text-[#046FB6] transition-all duration-200 hover:scale-110"
                     aria-label="Facebook"
                     title="Urmărește-ne pe Facebook"
                   >
@@ -270,7 +270,7 @@ export default function Header() {
                     href="https://www.tiktok.com/@parcare_aeroport?_t=ZN-8wmzQZdnbra&_r=1"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-gray-400 hover:text-[#13005a] transition-all duration-200 hover:scale-110"
+                    className="text-gray-400 hover:text-[#046FB6] transition-all duration-200 hover:scale-110"
                     aria-label="TikTok"
                     title="Urmărește-ne pe TikTok"
                   >

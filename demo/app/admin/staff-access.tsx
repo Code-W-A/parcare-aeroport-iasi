@@ -65,7 +65,7 @@ export function StaffAccess() {
     catch { setChecking(false); setError('Autentificarea a eșuat. Verifică datele și conexiunea.') }
     finally { setSubmitting(false) }
   }}>
-    <span className="brand-icon"><CarFront size={24} /></span><h1>Parcare Aeroport Iași</h1><p>Autentificare personal</p>
+    <span className="brand-icon"><img src="/brand-logo.png" alt="Parcare Aeroport Iași" width={40} height={40} /></span><h1>Parcare Aeroport Iași</h1><p>Autentificare personal</p>
     <label>Email<input type="email" autoComplete="username" value={email} disabled={submitting} onChange={e => setEmail(e.target.value)} required /></label>
     <label htmlFor="staff-password">Parolă</label><div className="password-field">
       <input id="staff-password" type={showPassword ? 'text' : 'password'} autoComplete="current-password" value={password} disabled={submitting} onChange={e => setPassword(e.target.value)} required />

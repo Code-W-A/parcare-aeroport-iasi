@@ -175,7 +175,7 @@ function DemoAdminPage() {
       {menu && <button className="scrim" aria-label="Închide meniul" onClick={() => setMenu(false)} />}
       <aside className={menu ? "sidebar open" : "sidebar"}>
         <div className="brand">
-          <span className="brand-icon"><CarFront size={23} /></span>
+          <span className="brand-icon"><img src="/brand-logo.png" alt="Parcare Aeroport Iași" width={40} height={40} /></span>
           <div><strong>Parcare Aeroport Iași</strong><small>Administrare</small></div>
           <button className="icon-button mobile-only" aria-label="Închide meniul" onClick={() => setMenu(false)}><X size={19} /></button>
         </div>

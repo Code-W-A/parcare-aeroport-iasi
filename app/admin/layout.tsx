@@ -104,7 +104,7 @@ function AdminLayoutContent({ children }: { children: ReactNode }) {
         <div className="flex items-center justify-center p-6 border-b">
           {/* Mobile logo for sidebar */}
           <Image
-            src="/otp_parking.png"
+            src="/brand-logo.png"
             alt="OTP Parking Logo"
             width={120}
             height={48}
@@ -112,7 +112,7 @@ function AdminLayoutContent({ children }: { children: ReactNode }) {
           />
           {/* Desktop logo for sidebar */}
           <Image
-            src="/otp_parking.png"
+            src="/brand-logo.png"
             alt="OTP Parking Logo"
             width={120}
             height={48}
@@ -192,7 +192,7 @@ function AdminLayoutContent({ children }: { children: ReactNode }) {
               <Menu className="h-5 w-5" />
             </Button>
             <Image
-              src="/otp_parking.png"
+              src="/brand-logo.png"
               alt="OTP Parking Logo"
               width={100}
               height={40}

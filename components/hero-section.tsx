@@ -40,17 +40,17 @@ export default function HeroSection() {
   return (
     <>
       {/* Top phone bar */}
-      <div className="bg-[#13005a] text-white py-2 px-4 text-center">
+      <div className="bg-[#046FB6] text-white py-2 px-4 text-center">
         <Link 
           href="tel:+40742039955" 
-          className="inline-flex items-center gap-2 hover:text-[#ee7f1a] transition-colors duration-200"
+          className="inline-flex items-center gap-2 hover:text-[#046FB6] transition-colors duration-200"
         >
           <Phone className="h-4 w-4" />
           <span className="text-sm md:text-base font-medium">+40 742 039 955 - Contact</span>
         </Link>
       </div>
 
-      <section id="rezerva-formular" className="relative w-full bg-gradient-to-br from-[#ee7f1a] to-[#13005a] py-10 md:py-16 overflow-hidden min-h-screen md:h-[95vh] flex flex-col justify-center md:justify-end">
+      <section id="rezerva-formular" className="relative w-full bg-gradient-to-br from-[#046FB6] to-[#046FB6] py-10 md:py-16 overflow-hidden min-h-screen md:h-[95vh] flex flex-col justify-center md:justify-end">
         {/* Imagine de fundal cu fade pentru fiecare slide, toate în DOM pentru SEO */}
         <div className="absolute inset-0 w-full h-full z-0 pointer-events-none">
           {SLIDES.map((slide, idx) => (
@@ -67,7 +67,7 @@ export default function HeroSection() {
           {/* Gradient roz-mov peste imagine, acum vertical roz->albastru și cu mask-fade-right */}
           <div
             className="absolute inset-0 mask-fade-right"
-            style={{ background: 'linear-gradient(to bottom, #ee7f1a 0%, #13005a 80%)' }}
+            style={{ background: 'linear-gradient(to bottom, #046FB6 0%, #046FB6 80%)' }}
           />
         </div>
 
@@ -82,7 +82,7 @@ export default function HeroSection() {
           >
             <div className="bg-white rounded-lg p-3 md:p-4 shadow-lg hover:shadow-xl transition-shadow duration-200">
               <Image
-                src="/otp_parking.png"
+                src="/brand-logo.png"
                 alt="OTP Parking Logo"
                 width={200}
                 height={65}

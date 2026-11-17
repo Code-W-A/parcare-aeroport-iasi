@@ -1,4 +1,5 @@
 import express from "express";
+import { zeroFreeDays } from "./free-days";
 import { getFirestore } from "firebase-admin/firestore";
 import { z } from "zod";
 import { ApiError, assertGuest, authenticate, staffSession } from "../access";
@@ -14,6 +15,7 @@ import {
   bookingDto,
 } from "./domain";
 import {
+  availability,
   adjustLoyalty,
   createBooking,
   getConfig,
@@ -71,11 +73,21 @@ export function commerceRouter() {
     }),
   );
   router.post(
+    "/availability",
+    route(async (req, res) => {
+      await assertGuest(req);
+      res.json(await availability(inputSchema.parse(req.body)));
+    }),
+  );
+  router.post(
     "/quotes",
     route(async (req, res) => {
       const user = await assertGuest(req);
       const input = periodSchema
-        .extend({ applyBenefit: z.boolean().default(false) })
+        .extend({
+          applyBenefit: z.boolean().default(false),
+          paymentMethod: z.enum(["online", "at_parking"]).optional(),
+        })
         .strict()
         .parse(req.body);
       res.json({ quote: await quoteFor(user.uid, input) });
@@ -87,6 +99,7 @@ export function commerceRouter() {
       const user = await assertGuest(req);
       const input = inputSchema
         .extend({
+          saveBilling: z.boolean().optional(),
           applyBenefit: z.boolean().default(false),
           configRevision: z.number().int(),
           benefitRevision: z.number().int(),
@@ -102,6 +115,48 @@ export function commerceRouter() {
     route(async (req, res) => {
       const user = await assertGuest(req);
       res.json(await ownBookings(user.uid, req.query));
+    }),
+  );
+  router.post(
+    "/bookings/:id/cancellation-request",
+    route(async (req, res) => {
+      const user = await assertGuest(req);
+      const bookingId = id(req.params.id);
+      const input = z
+        .object({
+          expectedRevision: revisionSchema,
+          reason: z.string().trim().min(3).max(500),
+        })
+        .strict()
+        .parse(req.body);
+      await db().runTransaction(async (tx) => {
+        const ref = db().doc(`bookings/${bookingId}`),
+          snap = await tx.get(ref);
+        if (!snap.exists || snap.get("ownerUid") !== user.uid)
+          throw new ApiError(404, "NOT_FOUND", "Rezervare indisponibilă.");
+        if (snap.get("cancellationRequest.status") === "pending") return;
+        if (
+          snap.get("revision") !== input.expectedRevision ||
+          snap.get("bookingStatus") === "cancelled" ||
+          snap.get("movementStatus") !== "waiting"
+        )
+          throw new ApiError(
+            409,
+            "CONFLICT",
+            "Anularea nu mai poate fi solicitată. Actualizează rezervarea.",
+          );
+        tx.update(ref, {
+          cancellationRequest: { status: "pending", reason: input.reason },
+          revision: snap.get("revision") + 1,
+        });
+        tx.create(ref.collection("audit").doc(), {
+          actorUid: user.uid,
+          action: "cancellation-request",
+          reason: input.reason,
+          createdAt: new Date(),
+        });
+      });
+      res.json({ ok: true });
     }),
   );
   router.get(
@@ -122,20 +177,25 @@ export function commerceRouter() {
       const user = await assertGuest(req);
       const snap = await db().doc(`users/${user.uid}/meta/loyalty`).get();
       res.json({
-        loyalty: snap.data() || {
-          ...emptyCustomer(
-            `guest_${user.uid}`,
-            {
-              name: "",
-              phone: "",
-              licensePlate: "",
-              flight: "",
-              arrival: "",
-              departure: "",
-            },
-            user.uid,
-          ),
-          revision: 0,
+        loyalty: {
+          ...(snap.data() || {
+            ...emptyCustomer(
+              `guest_${user.uid}`,
+              {
+                name: "",
+                phone: "",
+                licensePlate: "",
+                flight: "",
+                arrival: "",
+                departure: "",
+              },
+              user.uid,
+            ),
+            revision: 0,
+          }),
+          ...((await getConfig()).loyaltyVersion === 2
+            ? { freeDays: snap.get("freeDays") || zeroFreeDays() }
+            : {}),
         },
       });
     }),
@@ -250,6 +310,7 @@ export function commerceRouter() {
     }),
   );
   for (const action of [
+    "reject-cancellation",
     "confirm",
     "arrive",
     "depart",
@@ -275,10 +336,11 @@ export function commerceRouter() {
     "/admin/customers",
     route(async (req, res) => {
       await staffSession(req);
+      const v2 = (await getConfig()).loyaltyVersion === 2;
       const search = normalize(String(req.query.search || ""));
       let q: FirebaseFirestore.Query = db()
         .collection("customers")
-        .where("reservationCount", ">=", 2);
+        .where("reservationCount", ">=", v2 ? 0 : 2);
       if (search) {
         if (search.length < 2)
           throw new ApiError(
@@ -298,7 +360,11 @@ export function commerceRouter() {
           false,
           (id, data) => {
             const { searchPrefixes, ...rest } = data;
-            return { ...rest, id };
+            return {
+              ...rest,
+              id,
+              ...(v2 ? { freeDays: rest.freeDays || zeroFreeDays() } : {}),
+            };
           },
           50,
           ["reservationCount"],
@@ -316,7 +382,15 @@ export function commerceRouter() {
       if (!snap.exists)
         throw new ApiError(404, "NOT_FOUND", "Clientul nu există.");
       const { searchPrefixes, ...data } = snap.data()!;
-      res.json({ loyalty: { ...data, id: snap.id } });
+      res.json({
+        loyalty: {
+          ...data,
+          id: snap.id,
+          ...((await getConfig()).loyaltyVersion === 2
+            ? { freeDays: data.freeDays || zeroFreeDays() }
+            : {}),
+        },
+      });
     }),
   );
   router.get(
@@ -476,7 +550,10 @@ export function commerceRouter() {
   );
   async function notificationIdentity(req: express.Request) {
     const token = await authenticate(req);
-    if (token.firebase.sign_in_provider !== "anonymous")
+    if (
+      token.firebase.sign_in_provider !== "anonymous" &&
+      token.customerSession !== true
+    )
       await staffSession(req);
     return token;
   }

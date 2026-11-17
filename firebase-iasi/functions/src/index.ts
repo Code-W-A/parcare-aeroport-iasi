@@ -6,7 +6,7 @@ if (process.env.FUNCTIONS_EMULATOR === 'true' && (!process.env.FIREBASE_AUTH_EMU
   throw new Error('Auth and Firestore emulators must both be running.');
 }
 initializeApp();
-export const api = onRequest({ region: 'europe-west1', minInstances: 0, maxInstances: 5, concurrency: 20 }, createApp());
+export const api = onRequest({ region: 'europe-west1', invoker: 'public', minInstances: 0, maxInstances: 5, concurrency: 20 }, createApp());
 
 import { onSchedule } from 'firebase-functions/v2/scheduler';
 import { processNotificationJobs } from './commerce/service';

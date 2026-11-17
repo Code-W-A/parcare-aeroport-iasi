@@ -329,7 +329,7 @@ export default function CancellationForm() {
               <PopoverTrigger asChild>
                 <Button
                   variant="ghost"
-                  className="w-full justify-start text-left font-normal h-12 border border-gray-200 bg-transparent hover:border-[#ee7f1a] focus:border-[#ee7f1a] focus:ring-2 focus:ring-[#ee7f1a]/20 hover:bg-transparent focus:bg-transparent text-gray-900 hover:text-gray-900"
+                  className="w-full justify-start text-left font-normal h-12 border border-gray-200 bg-transparent hover:border-[#046FB6] focus:border-[#046FB6] focus:ring-2 focus:ring-[#046FB6]/20 hover:bg-transparent focus:bg-transparent text-gray-900 hover:text-gray-900"
                   type="button"
                   onClick={() => setOpenCalendar("start")}
                 >
@@ -354,7 +354,7 @@ export default function CancellationForm() {
               <PopoverTrigger asChild>
                 <Button
                   variant="ghost"
-                  className="w-full justify-start text-left font-normal h-12 border border-gray-200 bg-transparent hover:border-[#ee7f1a] focus:border-[#ee7f1a] focus:ring-2 focus:ring-[#ee7f1a]/20 hover:bg-transparent focus:bg-transparent text-gray-900 hover:text-gray-900"
+                  className="w-full justify-start text-left font-normal h-12 border border-gray-200 bg-transparent hover:border-[#046FB6] focus:border-[#046FB6] focus:ring-2 focus:ring-[#046FB6]/20 hover:bg-transparent focus:bg-transparent text-gray-900 hover:text-gray-900"
                   type="button"
                 >
                   <Clock className="mr-2 h-4 w-4 text-gray-500" />
@@ -379,7 +379,7 @@ export default function CancellationForm() {
               <PopoverTrigger asChild>
                 <Button
                   variant="ghost"
-                  className="w-full justify-start text-left font-normal h-12 border border-gray-200 bg-transparent hover:border-[#ee7f1a] focus:border-[#ee7f1a] focus:ring-2 focus:ring-[#ee7f1a]/20 hover:bg-transparent focus:bg-transparent text-gray-900 hover:text-gray-900"
+                  className="w-full justify-start text-left font-normal h-12 border border-gray-200 bg-transparent hover:border-[#046FB6] focus:border-[#046FB6] focus:ring-2 focus:ring-[#046FB6]/20 hover:bg-transparent focus:bg-transparent text-gray-900 hover:text-gray-900"
                   type="button"
                   onClick={() => setOpenCalendar("end")}
                 >
@@ -404,7 +404,7 @@ export default function CancellationForm() {
               <PopoverTrigger asChild>
                 <Button
                   variant="ghost"
-                  className="w-full justify-start text-left font-normal h-12 border border-gray-200 bg-transparent hover:border-[#ee7f1a] focus:border-[#ee7f1a] focus:ring-2 focus:ring-[#ee7f1a]/20 hover:bg-transparent focus:bg-transparent text-gray-900 hover:text-gray-900"
+                  className="w-full justify-start text-left font-normal h-12 border border-gray-200 bg-transparent hover:border-[#046FB6] focus:border-[#046FB6] focus:ring-2 focus:ring-[#046FB6]/20 hover:bg-transparent focus:bg-transparent text-gray-900 hover:text-gray-900"
                   type="button"
                 >
                   <Clock className="mr-2 h-4 w-4 text-gray-500" />
@@ -427,7 +427,7 @@ export default function CancellationForm() {
       {/* Submit Button */}
       <Button
         type="submit"
-        className="w-full h-12 bg-[#ee7f1a] hover:bg-[#d67016] text-white font-medium text-base"
+        className="w-full h-12 bg-[#046FB6] hover:bg-[#03588F] text-white font-medium text-base"
         disabled={isSubmitting}
       >
         {isSubmitting ? (

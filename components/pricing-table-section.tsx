@@ -251,7 +251,7 @@ export default function PricingTableSection() {
               {/* Buton Principal - Fundal roz + Text alb */}
               <Link
                 href="/#rezerva-formular"
-                className="inline-flex items-center gap-2 bg-[#ee7f1a] hover:bg-[#d67016] text-white px-8 py-4 rounded-md transition-all duration-200 font-medium shadow-md hover:shadow-lg hover:scale-105"
+                className="inline-flex items-center gap-2 bg-[#046FB6] hover:bg-[#03588F] text-white px-8 py-4 rounded-md transition-all duration-200 font-medium shadow-md hover:shadow-lg hover:scale-105"
               >
                 <span>Rezervă acum</span>
                 <ChevronRight className="h-4 w-4" />
@@ -346,7 +346,7 @@ export default function PricingTableSection() {
             {/* Buton Secundar - Fundal alb + Border & Text roz */}
             <Link
               href="/tarife"
-              className="inline-flex items-center gap-2 bg-white hover:bg-[#ee7f1a]/5 text-[#ee7f1a] hover:text-[#ee7f1a] border-2 border-[#ee7f1a] hover:border-[#d67016] px-8 py-4 rounded-md transition-all duration-200 font-medium shadow-sm hover:shadow-md"
+              className="inline-flex items-center gap-2 bg-white hover:bg-[#046FB6]/5 text-[#046FB6] hover:text-[#046FB6] border-2 border-[#046FB6] hover:border-[#03588F] px-8 py-4 rounded-md transition-all duration-200 font-medium shadow-sm hover:shadow-md"
             >
               Vezi toate tarifele (30+ zile)
             </Link>

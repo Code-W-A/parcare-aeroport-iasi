@@ -81,7 +81,7 @@ export default function LoginPage() {
           <div className="flex justify-center mb-4">
             {/* Mobile logo */}
             <Image
-              src="/otp_parking.png"
+              src="/brand-logo.png"
               alt="OTP Parking Logo"
               width={150}
               height={60}
@@ -89,7 +89,7 @@ export default function LoginPage() {
             />
             {/* Desktop logo */}
             <Image
-              src="/otp_parking.png"
+              src="/brand-logo.png"
               alt="OTP Parking Logo"
               width={150}
               height={60}

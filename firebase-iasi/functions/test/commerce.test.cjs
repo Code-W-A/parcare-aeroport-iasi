@@ -95,7 +95,7 @@ before(async () => {
     assert.equal(
       (
         await call("POST", "/v1/guest/session", person, {
-          email: "same-contact@example.com",
+          email: `${person.uid}@example.com`,
           phone: "0700123456",
         })
       ).status,
@@ -640,4 +640,147 @@ test("untrusted cursors and out-of-range asOf are permanent validation errors", 
   const invalid = await call("GET", "/v1/bookings?tab=ongoing&asOf=" + encodeURIComponent(ongoing.body.asOf) + "&cursor=" + Buffer.from(JSON.stringify(cursor)).toString("base64url"), owner);
   assert.equal(invalid.status, 400);
   assert.equal((await call("GET", "/v1/bookings?asOf=%2B010000-01-01T00%3A00%3A00.000Z", owner)).status, 400);
+});
+
+test('complete contact, transfer and billing persist in API, lists and admin edits', async () => {
+  const { emptyDetails } = require('../lib/booking-details');
+  const details = { ...emptyDetails('Ana Ionescu', 'ana@example.com'), numberOfPersons: 4, carModel: 'Dacia Logan', carType: 'Standard', address: 'Strada Test 12', county: 'Iași', city: 'Iași', orderNotes: 'Scaun copil' };
+  const owner = await identity();
+  await call('POST', '/v1/guest/session', owner, { email: 'billing@example.com', phone: '0700123456' });
+  async function create(customerDetails, saveBilling) {
+    const q = (await call('POST', '/v1/quotes', owner, { arrival: input.arrival, departure: input.departure, applyBenefit: false })).body.quote;
+    return call('POST', '/v1/bookings/requests', owner, { ...input, customerDetails, saveBilling, configRevision: q.configRevision, benefitRevision: q.benefitRevision, expiresAt: q.expiresAt });
+  }
+  for (const patch of [{ address: '' }, { email: 'invalid' }, { numberOfPersons: 0 }, { numberOfPersons: 1.5 }, { county: 'invalid' }, { county: 'București', city: 'Sector 8' }, { billingType: 'company' }, { orderNotes: 'x'.repeat(1001) }]) assert.equal((await create({ ...details, ...patch }, false)).status, 400);
+  const first = await create(details, false);
+  assert.equal(first.status, 200, JSON.stringify(first.body));
+  assert.equal(first.body.profile.savedBilling, null);
+  assert.deepEqual(first.body.booking.customerDetails, details);
+  const company = { ...details, billingType: 'company', company: 'Test SRL', companyVAT: 'RO123456', companyReg: 'J22/123/2020', companyAddress: 'Strada Firmei 3' };
+  const second = await create(company, true);
+  assert.equal(second.status, 200, JSON.stringify(second.body));
+  assert.equal(second.body.profile.savedBilling.company, 'Test SRL');
+  const me = await call('GET', '/v1/me', owner);
+  assert.equal(me.body.profile.savedBilling.company, 'Test SRL');
+  for (const path of ['/v1/bookings/' + second.body.booking.id, '/v1/admin/bookings/' + second.body.booking.id]) {
+    const read = await call('GET', path, path.includes('/admin/') ? staff : owner);
+    assert.deepEqual(read.body.booking.customerDetails, company);
+  }
+  const list = await call('GET', '/v1/bookings?tab=upcoming', owner);
+  assert.equal(list.body.items.find(b => b.id === second.body.booking.id).customerDetails.numberOfPersons, 4);
+  const edited = await call('PATCH', '/v1/admin/bookings/' + second.body.booking.id, staff, { expectedRevision: second.body.booking.revision, reason: 'Corectare transfer', details: { ...input, customerDetails: { ...company, numberOfPersons: 5, orderNotes: 'Actualizat' } } });
+  assert.equal(edited.status, 200, JSON.stringify(edited.body));
+  const afterEdit = await call('GET', '/v1/bookings/' + second.body.booking.id, owner);
+  assert.equal(afterEdit.body.booking.customerDetails.numberOfPersons, 5);
+  assert.equal(afterEdit.body.booking.customerDetails.orderNotes, 'Actualizat');
+  const legacy = await call('PATCH', '/v1/admin/bookings/' + second.body.booking.id, staff, { expectedRevision: edited.body.booking.revision, reason: 'Editare veche', details: input });
+  assert.equal(legacy.status, 200);
+  assert.equal(legacy.body.booking.customerDetails.numberOfPersons, 5);
+  const third = await create(details, false);
+  assert.equal(third.body.profile.savedBilling.company, 'Test SRL');
+  assert.equal((await call('GET', '/v1/bookings/' + second.body.booking.id, owner)).body.booking.customerDetails.company, 'Test SRL');
+  assert.equal((await call('GET', '/v1/bookings/' + second.body.booking.id, other)).status, 404);
+});
+
+test('saved cars are owner scoped, revisioned, deduplicated; billing clear is explicit', async () => {
+ const owner=await identity(), outsider=await identity();
+ for(const user of [owner,outsider]) await call('POST','/v1/guest/session',user,{email:'reuse@example.com',phone:'0700123456'});
+ let p=(await call('GET','/v1/me',owner)).body.profile;
+ const car={plate:'is 12 abc',model:'Dacia',type:'Standard'};
+ const saved=await call('POST','/v1/me/cars',owner,{action:'save',id:'one',car,expectedRevision:p.revision});
+ assert.equal(saved.status,200,JSON.stringify(saved.body));p=saved.body.profile;assert.equal(p.cars[0].plate,'IS 12 ABC');
+ assert.equal((await call('POST','/v1/me/cars',owner,{action:'save',id:'duplicate',car:{...car,plate:'IS12ABC'},expectedRevision:p.revision})).status,409);
+ assert.equal((await call('POST','/v1/me/cars',outsider,{action:'remove',id:'one',expectedRevision:1})).status,404);
+ const added=await call('POST','/v1/me/cars',owner,{action:'save',id:'two',car:{...car,plate:'IS 22 ABC'},expectedRevision:p.revision});p=added.body.profile;
+ assert.equal((await call('POST','/v1/me/cars',owner,{action:'remove',id:'two',expectedRevision:p.revision-1})).status,409);
+ const prefer=await call('POST','/v1/me/cars',owner,{action:'prefer',id:'two',expectedRevision:p.revision});p=prefer.body.profile;assert.equal(p.preferredCarId,'two');assert.equal(p.lastUsedCarId,'two');
+ const contact=await call('PATCH','/v1/me',owner,{firstName:'Ana Maria',lastName:'Ionescu',email:'new@example.com',phone:'0700123456',expectedRevision:p.revision});p=contact.body.profile;assert.equal(p.name,'Ana Maria Ionescu');
+ const {emptyDetails,billingOnly}=require('../lib/booking-details');
+ const details={...emptyDetails('Ana Ionescu','book@example.com'),carModel:'Dacia',carType:'Standard',address:'Strada 1',county:'Iași',city:'Iași',numberOfPersons:4};
+ const bill=await call('PATCH','/v1/me',owner,{savedBilling:billingOnly(details),expectedRevision:p.revision});assert.equal(bill.status,200);p=bill.body.profile;
+ const q=(await call('POST','/v1/quotes',owner,{arrival:input.arrival,departure:input.departure,applyBenefit:false})).body.quote;
+ const booked=await call('POST','/v1/bookings/requests',owner,{...input,licensePlate:'IS 22 ABC',savedCarId:'two',customerDetails:details,saveBilling:false,configRevision:q.configRevision,benefitRevision:q.benefitRevision,expiresAt:q.expiresAt});assert.equal(booked.status,200,JSON.stringify(booked.body));p=booked.body.profile;
+ assert.equal(p.email,'book@example.com');assert.equal(p.lastPersons,4);assert.equal(p.savedBilling.address,'Strada 1');
+ const changed=await call('POST','/v1/me/cars',owner,{action:'save',id:'two',car:{...car,plate:'IS 33 ABC',model:'Ford'},expectedRevision:p.revision});p=changed.body.profile;
+ assert.equal((await call('GET','/v1/bookings/'+booked.body.booking.id,owner)).body.booking.customerDetails.carModel,'Dacia');
+ const deleted=await call('POST','/v1/me/cars',owner,{action:'remove',id:'two',expectedRevision:p.revision});p=deleted.body.profile;assert.equal(p.cars.length,1);assert.equal(p.preferredCarId,'one');
+ const cleared=await call('PATCH','/v1/me',owner,{savedBilling:null,expectedRevision:p.revision});assert.equal(cleared.status,200);assert.equal(cleared.body.profile.savedBilling,null);
+ const original=(await call('GET','/v1/admin/bookings/'+booked.body.booking.id,staff)).body.booking;assert.equal(original.customerDetails.address,'Strada 1');assert.equal(original.licensePlate,'IS 22 ABC');
+});
+
+test("availability peak, adjacent periods, normalized plates, concurrent last place and cancellation lifecycle", async()=>{
+  const db=getFirestore();
+  await db.doc('publicConfig/booking').update({capacity:1,onlineDiscountPercent:20,atParkingDiscountPercent:5});
+  const selection={...input,arrival:day(90)+'T10:00',departure:day(92)+'T10:00',licensePlate:'IS 99 NEW'};
+  const first=await call('POST','/v1/admin/bookings',staff,selection); assert.equal(first.status,200,JSON.stringify(first.body));
+  const check=await call('POST','/v1/availability',guest,{...selection,licensePlate:'IS-99-NEW'});assert.equal(check.body.duplicateReservation,true);assert.equal(check.body.available,false);
+  const adjacent=await call('POST','/v1/availability',guest,{...selection,arrival:selection.departure,departure:day(94)+'T10:00'});assert.equal(adjacent.body.available,true);
+  const offer=await call('POST','/v1/quotes',guest,{arrival:day(95)+'T10:00',departure:day(97)+'T10:00',paymentMethod:'online'}); assert.equal(offer.body.quote.discountPercent,20);
+  const concurrent=await Promise.all(['IS 11 CC','IS 22 CC'].map(licensePlate=>call('POST','/v1/admin/bookings',staff,{...selection,licensePlate,arrival:day(100)+'T10:00',departure:day(102)+'T10:00'})));assert.deepEqual(concurrent.map(r=>r.status).sort(),[200,409]);
+  const q=await call('POST','/v1/quotes',guest,{arrival:day(110)+'T10:00',departure:day(112)+'T10:00',paymentMethod:'online'});
+  const created=await call('POST','/v1/bookings/requests',guest,{...selection,arrival:q.body.quote.arrival,departure:q.body.quote.departure,paymentMethod:'online',configRevision:q.body.quote.configRevision,benefitRevision:q.body.quote.benefitRevision,expiresAt:q.body.quote.expiresAt}); assert.equal(created.status,200,JSON.stringify(created.body));
+  let b=created.body.booking;assert.equal(b.paymentStatus,'unpaid');assert.equal(b.paymentMethod,'online');
+  assert.equal((await call('POST',`/v1/bookings/${b.id}/cancellation-request`,other,{expectedRevision:b.revision,reason:'Schimbare zbor'})).status,404);
+  assert.equal((await call('POST',`/v1/bookings/${b.id}/cancellation-request`,guest,{expectedRevision:b.revision,reason:'Schimbare zbor'})).status,200);
+  b=(await call('GET',`/v1/bookings/${b.id}`,guest)).body.booking;assert.equal(b.cancellationRequest.status,'pending');
+  const rejected=await action(b,'reject-cancellation',{reason:'Contactați operatorul'}); assert.equal(rejected.status,200);assert.equal(rejected.body.booking.cancellationRequest.status,'rejected');
+  assert.equal((await call('POST',`/v1/bookings/${b.id}/cancellation-request`,guest,{expectedRevision:rejected.body.booking.revision,reason:'Nu mai călătoresc'})).status,200);
+  b=(await call('GET',`/v1/bookings/${b.id}`,guest)).body.booking;
+  const cancelled=await action(b,'cancel',{reason:'Aprobat de echipă'});assert.equal(cancelled.status,200);assert.equal(cancelled.body.booking.cancellationRequest.status,'approved');
+});
+
+test("same email recovers existing identity without changing contact",async()=>{
+  const original=(await call('GET','/v1/me',guest)).body.profile;
+  const fresh=await identity();
+  const session=await call('POST','/v1/guest/session',fresh,{email:original.email.toUpperCase(),phone:'0799999999'});assert.equal(session.status,200);assert.ok(session.body.customToken);
+  const r=await fetch(`http://${process.env.FIREBASE_AUTH_EMULATOR_HOST}/identitytoolkit.googleapis.com/v1/accounts:signInWithCustomToken?key=emulator`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token:session.body.customToken,returnSecureToken:true})});const signed=await r.json();assert.equal(r.status,200);
+  const recovered=await call('GET','/v1/me',{token:signed.idToken});assert.equal(recovered.body.profile.uid,original.uid);assert.equal(recovered.body.profile.phone,original.phone);
+});
+
+test('method discounts choose the greater percentage, including zero, equality and full discount',async()=>{
+ const db=getFirestore(),ref=db.doc(`customers/guest_${guest.uid}`);
+ await ref.update({benefitStatus:'available',benefitPercent:10,benefitId:'qa-benefit'});
+ for(const [methodPercent,expected,benefit] of [[0,10,true],[10,10,false],[20,20,false],[100,100,false]]){
+  await db.doc('publicConfig/booking').update({onlineDiscountPercent:methodPercent});
+  const result=await call('POST','/v1/quotes',guest,{arrival:day(130)+'T10:00',departure:day(132)+'T10:00',paymentMethod:'online',applyBenefit:true});
+  assert.equal(result.status,200);assert.equal(result.body.quote.discountPercent,expected);assert.equal(!!result.body.quote.benefitId,benefit);
+  if(expected===100)assert.equal(result.body.quote.totalBani,0);
+ }
+});
+
+test('v2 reset, four confirmations earn a day, free booking reserves/consumes once, cancellation reverses and releases',async()=>{
+ const db=getFirestore();await db.doc('publicConfig/booking').update({loyaltyVersion:2,reservationsPerFreeDay:4,loyaltyEnabled:true,onlineDiscountPercent:0,atParkingDiscountPercent:0,capacity:100});
+ let offset=170;
+ async function request(){const data={...input,licensePlate:'IS 77 NEW',arrival:day(offset)+'T10:00',departure:day(offset+1)+'T10:00'};offset+=2;const q=(await call('POST','/v1/quotes',guest,{arrival:data.arrival,departure:data.departure})).body.quote;const result=await call('POST','/v1/bookings/requests',guest,{...data,configRevision:q.configRevision,benefitRevision:q.benefitRevision,expiresAt:q.expiresAt});assert.equal(result.status,200,JSON.stringify(result.body));return result.body;}
+ let latest;
+ for(let i=0;i<4;i++){const b=await request();latest=await action(b.booking,'confirm');assert.equal(latest.status,200);assert.equal(latest.body.loyalty.freeDays.points,i+1);}
+ assert.equal(latest.body.loyalty.freeDays.available,1);assert.equal(latest.body.loyalty.freeDays.progress,0);assert.ok(latest.body.loyalty.legacyLoyalty);
+ const free=await request();assert.equal(free.booking.pricing.totalBani,0);assert.equal(free.loyalty.freeDays.reserved,1);assert.equal(free.loyalty.freeDays.available,0);
+ const second=await request();assert.ok(second.booking.pricing.totalBani>0);
+ const confirmed=await action(free.booking,'confirm');assert.equal(confirmed.status,200);assert.equal(confirmed.body.loyalty.freeDays.points,5);assert.equal(confirmed.body.loyalty.freeDays.reserved,0);assert.equal(confirmed.body.booking.loyaltyV2.freeDay,'consumed');
+ assert.equal((await action(confirmed.body.booking,'payment-at-site')).status,409);
+ const cancelled=await action(confirmed.body.booking,'cancel',{reason:'Test anulare'});assert.equal(cancelled.status,200);assert.equal(cancelled.body.loyalty.freeDays.points,4);assert.equal(cancelled.body.loyalty.freeDays.available,1);
+ const another=await request();assert.equal(another.booking.pricing.totalBani,0);
+ const edited=await call('PATCH',`/v1/admin/bookings/${another.booking.id}`,staff,{expectedRevision:another.booking.revision,reason:'Extindere la trei zile',details:{...input,arrival:another.booking.arrival,departure:day(offset+1)+'T10:00'}});assert.equal(edited.status,200,JSON.stringify(edited.body));assert.ok(edited.body.booking.pricing.totalBani>0);assert.equal(edited.body.loyalty.freeDays.available,1);assert.equal(edited.body.loyalty.freeDays.reserved,0);
+ await db.doc('publicConfig/booking').update({loyaltyEnabled:false});
+ const disabled=await request();assert.ok(disabled.booking.pricing.totalBani>0);const dc=await action(disabled.booking,'confirm');assert.equal(dc.body.loyalty.freeDays.points,4);
+});
+
+test('free-day reversal creates recovery debt without consuming reserved benefits',()=>{
+ const {earnDay,reverseDay}=require('../lib/commerce/free-days');
+ let s=reverseDay({points:4,progress:0,available:0,reserved:1,debt:0},4);assert.equal(s.reserved,1);assert.equal(s.debt,1);
+ s=earnDay(s,4);assert.equal(s.debt,0);assert.equal(s.progress,0);
+ for(let i=0;i<4;i++)s=earnDay(s,4);assert.equal(s.available,1);
+});
+
+test('v2 concurrent requests reserve a single free day; pending snapshot survives disabling and threshold changes',async()=>{
+ const db=getFirestore(),c=db.doc('customers/guest_'+guest.uid);await db.doc('publicConfig/booking').update({loyaltyEnabled:true,reservationsPerFreeDay:4});await c.update({freeDays:{points:4,progress:0,available:1,reserved:0,debt:0}});
+ const selections=[220,224].map(n=>({...input,arrival:day(n)+'T10:00',departure:day(n+1)+'T10:00'}));
+ const quotes=await Promise.all(selections.map(s=>call('POST','/v1/quotes',guest,{arrival:s.arrival,departure:s.departure})));
+ const results=await Promise.all(selections.map((s,i)=>{const q=quotes[i].body.quote;return call('POST','/v1/bookings/requests',guest,{...s,configRevision:q.configRevision,benefitRevision:q.benefitRevision,expiresAt:q.expiresAt});}));assert.deepEqual(results.map(r=>r.status).sort(),[200,409]);
+ const won=results.find(r=>r.status===200).body.booking;assert.equal((await c.get()).get('freeDays.reserved'),1);
+ await db.doc('publicConfig/booking').update({loyaltyEnabled:false,reservationsPerFreeDay:8});
+ const confirmed=await action(won,'confirm');assert.equal(confirmed.status,200);assert.equal(confirmed.body.loyalty.freeDays.points,5);assert.equal(confirmed.body.booking.loyaltyV2.threshold,4);
+ const revision=confirmed.body.loyalty.revision;
+ const adjust=await call('POST',`/v1/admin/customers/guest_${guest.uid}/loyalty-adjustments`,staff,{expectedRevision:revision,pointsDelta:0,benefitAction:'consume',reason:'Nu există zi disponibilă'});assert.equal(adjust.status,409);
 });

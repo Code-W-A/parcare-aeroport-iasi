@@ -1,4 +1,9 @@
 "use client";
+import {
+  CustomerDetailsForm,
+  CustomerDetailsReadOnly,
+} from "./customer-details";
+import { emptyDetails, detailErrors } from "../../lib/booking-details";
 import { useEffect, useRef, useState } from "react";
 import { Bell, CarFront, LogOut, Menu, Plus, RefreshCw, X } from "lucide-react";
 import {
@@ -48,9 +53,11 @@ const paymentLabels = {
   paid_online: "Achitat online",
 };
 const label = (b: BookingRecord) =>
-  b.bookingStatus === "confirmed"
-    ? movementLabels[b.movementStatus]
-    : bookingLabels[b.bookingStatus];
+  b.cancellationRequest?.status === "pending"
+    ? "Anulare solicitată"
+    : b.bookingStatus === "confirmed"
+      ? movementLabels[b.movementStatus]
+      : bookingLabels[b.bookingStatus];
 const when = (s: string | null) => (s ? s.replace("T", " · ") : "—");
 const queryString = (params: Record<string, string>) =>
   new URLSearchParams(Object.entries(params).filter(([, v]) => v)).toString();
@@ -268,7 +275,12 @@ export function ConnectedAdmin({
       <aside className={`sidebar ${menu ? "open" : ""}`}>
         <div className="brand">
           <span className="brand-icon">
-            <CarFront size={24} />
+            <img
+              src="/brand-logo.png"
+              alt="Parcare Aeroport Iași"
+              width={40}
+              height={40}
+            />
           </span>
           <strong>Parcare Aeroport Iași</strong>
           <button
@@ -451,7 +463,11 @@ export function ConnectedAdmin({
                               </span>
                               <span className="row-client">
                                 <strong>{b.name}</strong>
-                                <span>{b.licensePlate}</span>
+                                <span>
+                                  {b.licensePlate} · Transfer:{" "}
+                                  {b.customerDetails?.numberOfPersons ??
+                                    "Nespecificat"}
+                                </span>
                                 {(kind === "arrival"
                                   ? b.arrival
                                   : b.departure) < now && (
@@ -516,6 +532,9 @@ export function ConnectedAdmin({
                     }
                   >
                     <option value="">Toate</option>
+                    <option value="cancellation_pending">
+                      Anulare solicitată
+                    </option>
                     {Object.entries({ ...bookingLabels, ...movementLabels })
                       .filter(([k]) => k !== "confirmed")
                       .map(([value, label]) => (
@@ -534,6 +553,9 @@ export function ConnectedAdmin({
                     }
                   >
                     <option value="">Toate</option>
+                    <option value="cancellation_pending">
+                      Anulare solicitată
+                    </option>
                     {Object.entries(paymentLabels).map(([value, label]) => (
                       <option key={value} value={value}>
                         {label}
@@ -753,13 +775,15 @@ export function ConnectedAdmin({
                     </small>
                   </span>
                   <span>
-                    {c.points} puncte
+                    {c.freeDays?.points ?? c.points} puncte
                     <small>
-                      {c.benefitStatus === "available"
-                        ? `Reducere ${c.benefitPercent}%`
-                        : c.benefitStatus === "reserved"
-                          ? "Beneficiu rezervat"
-                          : "Fără beneficiu disponibil"}
+                      {c.freeDays
+                        ? `${c.freeDays.available} zile gratuite · ${c.freeDays.reserved} rezervate`
+                        : c.benefitStatus === "available"
+                          ? `Reducere ${c.benefitPercent}%`
+                          : c.benefitStatus === "reserved"
+                            ? "Beneficiu rezervat"
+                            : "Fără beneficiu disponibil"}
                     </small>
                   </span>
                 </button>
@@ -921,6 +945,10 @@ function BookingTable({
                 <td>
                   {b.licensePlate}
                   <small>{b.phone}</small>
+                  <small>
+                    Transfer:{" "}
+                    {b.customerDetails?.numberOfPersons ?? "Nespecificat"}
+                  </small>
                 </td>
                 <td>
                   {when(b.arrival)}
@@ -966,6 +994,9 @@ function BookingEditor({
   const [values, setValues] = useState<BookingInput>(() =>
     booking
       ? {
+          ...(booking.customerDetails
+            ? { customerDetails: booking.customerDetails }
+            : {}),
           name: booking.name,
           phone: booking.phone,
           licensePlate: booking.licensePlate,
@@ -974,6 +1005,7 @@ function BookingEditor({
           departure: booking.departure,
         }
       : {
+          customerDetails: emptyDetails(),
           name: "",
           phone: "",
           licensePlate: "",
@@ -1001,6 +1033,10 @@ function BookingEditor({
     setBusy(true);
     setError("");
     try {
+      if (action === "edit" && values.customerDetails) {
+        const message = Object.values(detailErrors(values.customerDetails))[0];
+        if (message) throw new Error(message);
+      }
       const result = await command<{ booking: BookingRecord }>(
         current
           ? action === "edit"
@@ -1129,7 +1165,9 @@ function BookingEditor({
                     type={type}
                     required={key !== "flight"}
                     value={values[key]}
-                    disabled={busy}
+                    disabled={
+                      busy || (key === "name" && !!values.customerDetails)
+                    }
                     onChange={(e) =>
                       setValues({ ...values, [key]: e.target.value })
                     }
@@ -1137,6 +1175,31 @@ function BookingEditor({
                 </label>
               ))}
             </div>
+            {values.customerDetails ? (
+              <CustomerDetailsForm
+                value={values.customerDetails}
+                onChange={(customerDetails) =>
+                  setValues({
+                    ...values,
+                    customerDetails,
+                    name: `${customerDetails.firstName} ${customerDetails.lastName}`.trim(),
+                  })
+                }
+              />
+            ) : (
+              <button
+                type="button"
+                className="button secondary"
+                onClick={() =>
+                  setValues({
+                    ...values,
+                    customerDetails: emptyDetails(values.name),
+                  })
+                }
+              >
+                Completează datele suplimentare
+              </button>
+            )}
             <p className="cache-note">
               Orele sunt ale parcării (Europe/Bucharest). Totalul este calculat
               pe server din tarifele configurate.
@@ -1184,6 +1247,7 @@ function BookingEditor({
         ) : (
           current && (
             <>
+              <CustomerDetailsReadOnly value={current.customerDetails} />
               <dl className="form-grid details">
                 <div>
                   <dt>Client</dt>
@@ -1226,8 +1290,43 @@ function BookingEditor({
                 <strong>
                   {currency.format(current.pricing.totalBani / 100)}
                 </strong>{" "}
-                · {paymentLabels[current.paymentStatus]}
+                ·{" "}
+                {current.loyaltyV2 &&
+                current.pricing.totalBani === 0 &&
+                ["reserved", "consumed"].includes(current.loyaltyV2.freeDay)
+                  ? "Acoperită prin fidelitate"
+                  : paymentLabels[current.paymentStatus]}
               </p>
+              <p>
+                Metodă aleasă:{" "}
+                {current.paymentMethod === "online"
+                  ? "Online"
+                  : current.paymentMethod === "at_parking"
+                    ? "La parcare"
+                    : "Nespecificată"}
+              </p>
+              {current.cancellationRequest && (
+                <div className="notice">
+                  Anulare: {current.cancellationRequest.status} ·{" "}
+                  {current.cancellationRequest.reason}
+                  {current.cancellationRequest.status === "pending" && (
+                    <>
+                      <button
+                        disabled={busy}
+                        onClick={() => void save("cancel")}
+                      >
+                        Aprobă anularea (completează motivul)
+                      </button>
+                      <button
+                        disabled={busy}
+                        onClick={() => void save("reject-cancellation")}
+                      >
+                        Respinge anularea (completează motivul)
+                      </button>
+                    </>
+                  )}
+                </div>
+              )}
               {current.pricing.discountBani > 0 && (
                 <p>
                   Reducere:{" "}
@@ -1289,7 +1388,10 @@ function BookingEditor({
                       </button>
                     )}
                     {current.bookingStatus === "confirmed" &&
-                      current.paymentStatus === "unpaid" && (
+                      current.paymentStatus === "unpaid" &&
+                      !(
+                        current.loyaltyV2 && current.pricing.totalBani === 0
+                      ) && (
                         <button
                           className="button secondary"
                           disabled={busy}
@@ -1378,6 +1480,27 @@ function Settings({ onSaved }: { onSaved: () => void }) {
             .finally(() => setBusy(false));
         }}
       >
+        {(
+          [
+            ["capacity", "Număr total de locuri"],
+            ["onlineDiscountPercent", "Reducere online (%)"],
+            ["atParkingDiscountPercent", "Reducere la parcare (%)"],
+          ] as const
+        ).map(([field, label]) => (
+          <label key={field}>
+            {label}
+            <input
+              required
+              type="number"
+              min={field === "capacity" ? 1 : 0}
+              max={field === "capacity" ? 100000 : 100}
+              value={values[field] ?? ""}
+              onChange={(e) =>
+                setValues({ ...values, [field]: Number(e.target.value) })
+              }
+            />
+          </label>
+        ))}
         <label>
           Tarif pe zi începută (lei)
           <input
@@ -1415,6 +1538,46 @@ function Settings({ onSaved }: { onSaved: () => void }) {
           />
           Activează programul de fidelizare
         </label>
+        <label>
+          Program fidelizare
+          <select
+            value={values.loyaltyVersion || 1}
+            disabled={resource.data?.config.loyaltyVersion === 2}
+            onChange={(e) =>
+              setValues({
+                ...values,
+                loyaltyVersion: Number(e.target.value) as 1 | 2,
+              })
+            }
+          >
+            <option value={1}>Program anterior</option>
+            <option value={2}>
+              Puncte pe rezervare și zile gratuite — pornire de la zero
+            </option>
+          </select>
+        </label>
+        {values.loyaltyVersion === 2 && (
+          <label>
+            Rezervări pentru o zi gratuită
+            <input
+              type="number"
+              min={1}
+              max={100}
+              required
+              value={values.reservationsPerFreeDay || 4}
+              onChange={(e) =>
+                setValues({
+                  ...values,
+                  reservationsPerFreeDay: Number(e.target.value),
+                })
+              }
+            />
+            <span>
+              O zi gratuită per rezervare de maximum 24 de ore. Activarea
+              arhivează soldul anterior; nu recalculează istoricul.
+            </span>
+          </label>
+        )}
         <div className="form-grid">
           {(
             [
@@ -1439,30 +1602,37 @@ function Settings({ onSaved }: { onSaved: () => void }) {
                 1440,
               ],
             ] as const
-          ).map(([key, title, min, max]) => (
-            <label key={key}>
-              {title}
-              <input
-                type="number"
-                required
-                min={min}
-                max={max}
-                step="1"
-                value={values[key]}
-                onChange={(e) =>
-                  setValues({ ...values, [key]: Number(e.target.value) })
-                }
-              />
-            </label>
-          ))}
+          )
+            .filter(
+              ([key]) =>
+                values.loyaltyVersion !== 2 ||
+                ![
+                  "pointsPerDay",
+                  "benefitThreshold",
+                  "benefitPercent",
+                ].includes(key),
+            )
+            .map(([key, title, min, max]) => (
+              <label key={key}>
+                {title}
+                <input
+                  type="number"
+                  required
+                  min={min}
+                  max={max}
+                  step="1"
+                  value={values[key]}
+                  onChange={(e) =>
+                    setValues({ ...values, [key]: Number(e.target.value) })
+                  }
+                />
+              </label>
+            ))}
         </div>
         <p className="cache-note">
-          O zi înseamnă 24 de ore începute. Punctele se acordă numai la
-          încasare. La prima atingere a pragului se acordă un beneficiu; alte
-          beneficii pot fi acordate manual. Reducerea este rezervată cererii și
-          consumată la încasare. Tarifele noi nu modifică prețurile rezervărilor
-          plătite. Mementourile sunt verificate la intervale de 15 minute;
-          setările se aplică rezervărilor noi sau actualizate.
+          {values.loyaltyVersion === 2
+            ? "1 punct la confirmarea unei rezervări mobile. Ziua gratuită este rezervată la trimitere și consumată la confirmare. Anularea retrage punctul și restituie ziua. Schimbarea pragului se aplică rezervărilor noi; soldul se păstrează."
+            : "Program anterior: punctele se acordă la încasare, în funcție de numărul de zile."}
         </p>
         {error && (
           <p role="alert" className="error">
@@ -1502,7 +1672,16 @@ function CustomerEditor({
     [historyRows, setHistoryRows] = useState<BookingRecord[]>([]),
     [ledgerCursor, setLedgerCursor] = useState(""),
     [ledgerRows, setLedgerRows] = useState<
-      (AuditRecord & { delta?: number; pointsDelta?: number })[]
+      (AuditRecord & {
+        delta?: number;
+        pointsDelta?: number;
+        after?: {
+          points: number;
+          available: number;
+          reserved: number;
+          debt: number;
+        };
+      })[]
     >([]),
     [error, setError] = useState(""),
     [busy, setBusy] = useState(false);
@@ -1510,7 +1689,18 @@ function CustomerEditor({
       `/admin/customers/${customer.id}/bookings?cursor=${encodeURIComponent(cursor)}`,
     ),
     ledger = useAdminResource<
-      Page<AuditRecord & { delta?: number; pointsDelta?: number }>
+      Page<
+        AuditRecord & {
+          delta?: number;
+          pointsDelta?: number;
+          after?: {
+            points: number;
+            available: number;
+            reserved: number;
+            debt: number;
+          };
+        }
+      >
     >(
       `/admin/customers/${customer.id}/ledger?cursor=${encodeURIComponent(ledgerCursor)}`,
     );
@@ -1537,7 +1727,8 @@ function CustomerEditor({
         <div>
           <h2 id="customer-title">{customer.name}</h2>
           <p>
-            {customer.phone} · {customer.points} puncte
+            {customer.phone} · {customer.freeDays?.points ?? customer.points}{" "}
+            puncte
           </p>
         </div>
         <button className="icon-button" aria-label="Închide" onClick={onClose}>
@@ -1545,6 +1736,14 @@ function CustomerEditor({
         </button>
       </div>
       <div className="dialog-body detail-sections">
+        {customer.freeDays && (
+          <p>
+            Progres: {customer.freeDays.progress} · Zile disponibile:{" "}
+            {customer.freeDays.available} · Rezervate:{" "}
+            {customer.freeDays.reserved} · Puncte de recuperat:{" "}
+            {customer.freeDays.debt}
+          </p>
+        )}
         <form
           onSubmit={(event) => {
             event.preventDefault();
@@ -1585,8 +1784,16 @@ function CustomerEditor({
               Beneficiu
               <select name="benefit">
                 <option value="keep">Păstrează</option>
-                <option value="grant">Acordă reducerea configurată</option>
-                <option value="consume">Marchează utilizat</option>
+                <option value="grant">
+                  {customer.freeDays
+                    ? "Acordă o zi gratuită"
+                    : "Acordă reducerea configurată"}
+                </option>
+                <option value="consume">
+                  {customer.freeDays
+                    ? "Retrage o zi disponibilă"
+                    : "Marchează utilizat"}
+                </option>
               </select>
             </label>
           </div>
@@ -1643,7 +1850,11 @@ function CustomerEditor({
           <h3>Istoric puncte</h3>
           {ledgerRows.map((l) => (
             <p key={l.id}>
-              {l.action} · {l.delta ?? l.pointsDelta ?? 0} puncte · {l.reason}
+              {l.action} ·{" "}
+              {l.after
+                ? `${l.after.points} puncte · ${l.after.available} zile disponibile · ${l.after.reserved} rezervate · ${l.after.debt} de recuperat`
+                : `${l.delta ?? l.pointsDelta ?? 0} puncte`}{" "}
+              · {l.reason}
             </p>
           ))}
           {ledger.data?.nextCursor && (

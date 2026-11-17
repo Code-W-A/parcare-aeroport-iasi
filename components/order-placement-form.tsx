@@ -636,7 +636,7 @@ export default function OrderPlacementForm() {
                       appearance: {
                         theme: 'stripe',
                         variables: {
-                          colorPrimary: '#E6005C',
+                          colorPrimary: '#046FB6',
                           colorBackground: '#ffffff',
                           colorText: '#1a1a1a',
                           colorDanger: '#df1b41',
@@ -651,7 +651,7 @@ export default function OrderPlacementForm() {
                             fontSize: '16px',
                           },
                           '.Input:focus': {
-                            border: '1px solid #E6005C',
+                            border: '1px solid #046FB6',
                             boxShadow: '0 0 0 2px rgba(230, 0, 92, 0.2)',
                           },
                           '.Label': {
@@ -669,7 +669,7 @@ export default function OrderPlacementForm() {
                             backgroundColor: '#f9fafb',
                           },
                           '.Tab--selected': {
-                            border: '1px solid #E6005C',
+                            border: '1px solid #046FB6',
                             backgroundColor: '#fef7f0',
                           },
                           '.p-Link': {
@@ -1190,7 +1190,7 @@ export default function OrderPlacementForm() {
                     appearance: {
                       theme: 'stripe',
                       variables: {
-                        colorPrimary: '#E6005C',
+                        colorPrimary: '#046FB6',
                         colorBackground: '#ffffff',
                         colorText: '#1a1a1a',
                         colorDanger: '#df1b41',
@@ -1205,7 +1205,7 @@ export default function OrderPlacementForm() {
                           fontSize: '16px',
                         },
                         '.Input:focus': {
-                          border: '1px solid #E6005C',
+                          border: '1px solid #046FB6',
                           boxShadow: '0 0 0 2px rgba(230, 0, 92, 0.2)',
                         },
                         '.Label': {
@@ -1223,7 +1223,7 @@ export default function OrderPlacementForm() {
                           backgroundColor: '#f9fafb',
                         },
                         '.Tab--selected': {
-                          border: '1px solid #E6005C',
+                          border: '1px solid #046FB6',
                           backgroundColor: '#fef7f0',
                         },
                         '.p-Link': {

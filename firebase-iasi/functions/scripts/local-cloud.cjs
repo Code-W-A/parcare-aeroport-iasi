@@ -1,0 +1,21 @@
+// Local API against real Iași Firebase. Credentials stay in memory.
+const {createRequire}=require('node:module');
+const path=require('node:path');
+if(process.env.IASI_LOCAL_CLOUD!=='true')throw Error('Set IASI_LOCAL_CLOUD=true explicitly');
+if(process.env.FIRESTORE_EMULATOR_HOST||process.env.FIREBASE_AUTH_EMULATOR_HOST||process.env.FUNCTIONS_EMULATOR)throw Error('Unset emulator variables');
+const cli=createRequire(path.resolve(__dirname,'../../../package.json'));
+const auth=cli('firebase-tools/lib/auth'), api=cli('firebase-tools/lib/api');
+const account=auth.getGlobalDefaultAccount();
+if(!account)throw Error('Run firebase login');
+auth.setActiveAccount({},account);
+const {initializeApp,applicationDefault}=require('firebase-admin/app');
+const {getFirestore}=require('firebase-admin/firestore');
+process.env.GCLOUD_PROJECT='parcare-aeroport-iasi';
+process.env.ALLOWED_ORIGINS='http://localhost:3010,http://127.0.0.1:3010,http://localhost:8090,http://127.0.0.1:8090';
+const credential=applicationDefault();
+credential.getAccessToken=async()=>{const t=await auth.getAccessToken(account.tokens.refresh_token,['https://www.googleapis.com/auth/cloud-platform']);return {access_token:t.access_token,expires_in:3500};};
+initializeApp({projectId:'parcare-aeroport-iasi',credential,serviceAccountId:'firebase-adminsdk-fbsvc@parcare-aeroport-iasi.iam.gserviceaccount.com'});
+getFirestore().settings({credentials:{type:'authorized_user',client_id:api.clientId(),client_secret:api.clientSecret(),refresh_token:account.tokens.refresh_token}});
+const {createApp}=require('../lib/app');
+const server=createApp().listen(5010,'127.0.0.1',()=>console.log('Local API http://127.0.0.1:5010; real Firebase parcare-aeroport-iasi'));
+for(const signal of ['SIGINT','SIGTERM'])process.on(signal,()=>server.close(()=>process.exit(0)));

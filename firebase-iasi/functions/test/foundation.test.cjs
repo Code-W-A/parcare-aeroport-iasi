@@ -46,13 +46,13 @@ test('meta has no database dependency; unauthenticated and email-header access a
   assert.equal((await request('GET','/v1/me',{token:'forged'})).status,401);
   assert.equal((await request('GET','/v1/meta',null,null,{Origin:'https://untrusted.invalid'})).status,403);
 });
-test('guest session is idempotent, validates payload and never resolves another guest by email', async () => {
+test('guest session restores its profile, validates payload and returns a recovery token by email', async () => {
   const a = await request('POST','/v1/guest/session',alice,contact);
   assert.equal(a.status,200); assert.equal(a.body.profile.uid,alice.uid);
   const again = await request('POST','/v1/guest/session',alice,{email:'different@example.com',phone:'0700999999'});
   assert.deepEqual(again.body.profile,a.body.profile);
   const b = await request('POST','/v1/guest/session',bob,contact);
-  assert.equal(b.body.profile.uid,bob.uid); assert.notEqual(b.body.profile.uid,a.body.profile.uid);
+  assert.equal(b.status,200); assert.ok(b.body.customToken);
   assert.equal((await request('POST','/v1/guest/session',alice,{...contact,uid:bob.uid})).status,400);
   assert.equal((await request('POST','/v1/guest/session',alice,{email:'bad',phone:'x'})).status,400);
   assert.equal((await request('GET','/v1/me',alice)).body.profile.email,contact.email);

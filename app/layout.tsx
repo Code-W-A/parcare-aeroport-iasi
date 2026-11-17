@@ -9,7 +9,7 @@ import CallFloating from "@/components/whatsapp-floating"
 const inter = Inter({ subsets: ["latin"], display: "swap" })
 
 export const viewport: Viewport = {
-      themeColor: "#ee7f1a",
+      themeColor: "#046FB6",
   width: "device-width",
   initialScale: 1,
   maximumScale: 5,
@@ -107,10 +107,10 @@ export default function RootLayout({
     <html lang="ro" className="scroll-smooth">
       <head>
         {/* Enhanced Theme Color Support */}
-        <meta name="theme-color" content="#ee7f1a" />
-        <meta name="msapplication-TileColor" content="#ee7f1a" />
-        <meta name="msapplication-navbutton-color" content="#ee7f1a" />
-        <meta name="apple-mobile-web-app-status-bar-style" content="#ee7f1a" />
+        <meta name="theme-color" content="#046FB6" />
+        <meta name="msapplication-TileColor" content="#046FB6" />
+        <meta name="msapplication-navbutton-color" content="#046FB6" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="#046FB6" />
         
         {/* FontAwesome for icons */}
         <link 

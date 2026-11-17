@@ -9,7 +9,8 @@
   "scripts": {
     "build": "tsc",
     "test": "node --test --test-concurrency=1 test/*.test.cjs",
-    "staff": "node scripts/staff.cjs"
+    "staff": "node scripts/staff.cjs",
+    "start:local-cloud": "npm run build && IASI_LOCAL_CLOUD=true node scripts/local-cloud.cjs"
   },
   "dependencies": {
     "express": "4.22.3",

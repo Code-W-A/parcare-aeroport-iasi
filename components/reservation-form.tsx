@@ -695,7 +695,7 @@ export default function ReservationForm() {
                 <PopoverTrigger asChild>
                   <Button
                     variant="ghost"
-                    className="w-full justify-start text-left font-normal h-10 border border-gray-200 bg-transparent hover:border-[#ee7f1a] focus:border-[#ee7f1a] focus:ring-2 focus:ring-[#ee7f1a]/20 hover:bg-transparent focus:bg-transparent text-gray-900 hover:text-gray-900"
+                    className="w-full justify-start text-left font-normal h-10 border border-gray-200 bg-transparent hover:border-[#046FB6] focus:border-[#046FB6] focus:ring-2 focus:ring-[#046FB6]/20 hover:bg-transparent focus:bg-transparent text-gray-900 hover:text-gray-900"
                     type="button"
                     onClick={() => setOpenCalendar("start")}
                   >
@@ -722,7 +722,7 @@ export default function ReservationForm() {
                     className={`w-full justify-start text-left font-normal h-10 border bg-transparent hover:bg-transparent focus:bg-transparent text-gray-900 hover:text-gray-900 ${
                       timeError 
                         ? "border-red-500 hover:border-red-500 focus:border-red-500 focus:ring-2 focus:ring-red-500/20" 
-                        : "border-gray-200 hover:border-[#ee7f1a] focus:border-[#ee7f1a] focus:ring-2 focus:ring-[#ee7f1a]/20"
+                        : "border-gray-200 hover:border-[#046FB6] focus:border-[#046FB6] focus:ring-2 focus:ring-[#046FB6]/20"
                     }`}
                     type="button"
                   >
@@ -756,7 +756,7 @@ export default function ReservationForm() {
                 <PopoverTrigger asChild>
                   <Button
                     variant="ghost"
-                    className="w-full justify-start text-left font-normal h-10 border border-gray-200 bg-transparent hover:border-[#ee7f1a] focus:border-[#ee7f1a] focus:ring-2 focus:ring-[#ee7f1a]/20 hover:bg-transparent focus:bg-transparent text-gray-900 hover:text-gray-900"
+                    className="w-full justify-start text-left font-normal h-10 border border-gray-200 bg-transparent hover:border-[#046FB6] focus:border-[#046FB6] focus:ring-2 focus:ring-[#046FB6]/20 hover:bg-transparent focus:bg-transparent text-gray-900 hover:text-gray-900"
                     type="button"
                     onClick={() => setOpenCalendar("end")}
                   >
@@ -783,7 +783,7 @@ export default function ReservationForm() {
                     className={`w-full justify-start text-left font-normal h-10 border bg-transparent hover:bg-transparent focus:bg-transparent text-gray-900 hover:text-gray-900 ${
                       timeError 
                         ? "border-red-500 hover:border-red-500 focus:border-red-500 focus:ring-2 focus:ring-red-500/20" 
-                        : "border-gray-200 hover:border-[#ee7f1a] focus:border-[#ee7f1a] focus:ring-2 focus:ring-[#ee7f1a]/20"
+                        : "border-gray-200 hover:border-[#046FB6] focus:border-[#046FB6] focus:ring-2 focus:ring-[#046FB6]/20"
                     }`}
                     type="button"
                   >
@@ -815,7 +815,7 @@ export default function ReservationForm() {
               type="text"
               value={licensePlate}
               onChange={handleLicensePlateChange}
-              className={`rounded-lg border-gray-200 text-base px-3 py-2 hover:border-[#ee7f1a] focus:border-[#ee7f1a] focus:ring-2 focus:ring-[#ee7f1a]/20 focus:outline-none h-10 ${duplicateError ? "border-red-500" : ""}`}
+              className={`rounded-lg border-gray-200 text-base px-3 py-2 hover:border-[#046FB6] focus:border-[#046FB6] focus:ring-2 focus:ring-[#046FB6]/20 focus:outline-none h-10 ${duplicateError ? "border-red-500" : ""}`}
               placeholder="Ex: DB99SDF"
               required
             />
@@ -847,7 +847,7 @@ export default function ReservationForm() {
                 disabled: isSubmitting || !!dateError || isLoadingPrices || isLoadingSystemStatus
               })
             }}
-            className="h-10 w-full px-6 rounded-md bg-[#ee7f1a] hover:bg-[#d67016] text-white font-bold text-base shadow-md hover:shadow-lg flex items-center justify-center gap-2 transition-all duration-200"
+            className="h-10 w-full px-6 rounded-md bg-[#046FB6] hover:bg-[#03588F] text-white font-bold text-base shadow-md hover:shadow-lg flex items-center justify-center gap-2 transition-all duration-200"
             disabled={isSubmitting || !!dateError || isLoadingPrices || isLoadingSystemStatus}
           >
             {isSubmitting || isLoadingSystemStatus ? (
@@ -904,7 +904,7 @@ export default function ReservationForm() {
                   href="https://maps.app.goo.gl/GhoVMNWvst6BamHx5?g_st=aw"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex-1 inline-flex items-center justify-center gap-1 bg-[#ee7f1a] hover:bg-[#d67016] text-white px-4 py-2 md:px-6 md:py-3 rounded-md text-xs md:text-sm font-medium transition-all duration-200"
+                  className="flex-1 inline-flex items-center justify-center gap-1 bg-[#046FB6] hover:bg-[#03588F] text-white px-4 py-2 md:px-6 md:py-3 rounded-md text-xs md:text-sm font-medium transition-all duration-200"
                   title="Deschide în Google Maps"
                 >
                   <MapPin className="w-3 h-3 md:w-4 md:h-4" />

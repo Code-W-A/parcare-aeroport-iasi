@@ -5,8 +5,8 @@
   --line: #e2e7f0;
   --surface: #fff;
   --canvas: #f4f6fa;
-  --navy: #1d2860;
-  --focus: #5369be;
+  --navy: #046FB6;
+  --focus: #046FB6;
   font: 15px/1.5 Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   color: var(--ink);
   background: var(--canvas);
@@ -70,7 +70,7 @@ small { display: block; }
 .button, .icon-button { display: inline-flex; align-items: center; justify-content: center; gap: 7px; border: 1px solid transparent; border-radius: 8px; padding: 9px 13px; font-weight: 650; }
 .button { width: fit-content; min-height: 40px; }
 .primary { color: #fff; background: var(--navy); }
-.primary:hover { background: #304080; }
+.primary:hover { background: #03588F; }
 .secondary { background: var(--surface); border-color: #cdd5e4; }
 .secondary:hover, .icon-button:hover { background: var(--canvas); }
 .danger { color: #a02636; background: #fff5f5; border-color: #f2cdd0; }
@@ -208,3 +208,6 @@ input[aria-invalid="true"] { border-color: #a02636; }
   .connected-topbar .verify-access::before { content:'↻'; font-size:20px; }
   .connected-topbar .icon-button { flex-shrink:0; }
 }
+
+.brand-icon { background: #fff; }
+.brand-icon img { object-fit: contain; }
