@@ -12,7 +12,14 @@
     "test:occupancy:exits": "node scripts/test-occupancy-acceptance.cjs --exits",
     "test-lpr": "node scripts/test-metrici-lpr.js",
     "test-lpr-minimal": "node scripts/test-minimal-lpr.js",
-    "test-lpr-prod": "LPR_ENDPOINT=metrici-lpr node scripts/test-metrici-lpr.js"
+    "test-lpr-prod": "LPR_ENDPOINT=metrici-lpr node scripts/test-metrici-lpr.js",
+    "foundation:build": "npm --prefix firebase-iasi/functions run build",
+    "foundation:emulators": "npm run foundation:build && node firebase-iasi/scripts/emulators.cjs",
+    "foundation:test": "npm run foundation:build && node firebase-iasi/scripts/emulators.cjs test",
+    "foundation:contracts": "node firebase-iasi/scripts/sync-contracts.cjs",
+    "foundation:seed": "FIREBASE_AUTH_EMULATOR_HOST=127.0.0.1:9099 FIRESTORE_EMULATOR_HOST=127.0.0.1:8088 node firebase-iasi/functions/scripts/seed-emulator.cjs",
+    "foundation:reminders": "npm run foundation:build && FIREBASE_AUTH_EMULATOR_HOST=127.0.0.1:9099 FIRESTORE_EMULATOR_HOST=127.0.0.1:8088 node firebase-iasi/functions/scripts/reminders.cjs",
+    "foundation:indexes": "node firebase-iasi/scripts/generate-indexes.cjs"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.1",
@@ -47,7 +54,6 @@
     "@stripe/stripe-js": "^7.3.1",
     "@types/nodemailer": "^6.4.17",
     "@types/qrcode": "^1.5.5",
-    "@types/xlsx": "^0.0.36",
     "autoprefixer": "^10.4.20",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
@@ -55,13 +61,13 @@
     "date-fns": "latest",
     "embla-carousel-react": "8.5.1",
     "firebase": "latest",
-    "firebase-admin": "^13.7.0",
+    "firebase-admin": "14.5.1",
     "input-otp": "1.4.1",
     "lucide-react": "^0.454.0",
     "netopia-payment2": "^0.1.7",
-    "next": "15.2.6",
+    "next": "15.5.29",
     "next-themes": "^0.4.4",
-    "nodemailer": "^7.0.3",
+    "nodemailer": "10.6.0",
     "qrcode": "^1.5.4",
     "react": "^19",
     "react-day-picker": "^9.0.0",
@@ -74,6 +80,7 @@
     "tailwind-merge": "^2.5.5",
     "tailwindcss-animate": "^1.0.7",
     "vaul": "^1.1.2",
+    "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz",
     "zod": "latest"
   },
   "optionalDependencies": {
@@ -84,8 +91,15 @@
     "@types/node": "^22",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "firebase-tools": "15.36.0",
     "postcss": "^8",
     "tailwindcss": "^3.4.17",
     "typescript": "^5"
+  },
+  "overrides": {
+    "@grpc/grpc-js": "^1.14.7",
+    "next": {
+      "postcss": "^8.5.33"
+    }
   }
 }

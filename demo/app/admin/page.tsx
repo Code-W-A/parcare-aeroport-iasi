@@ -4,6 +4,9 @@ import { useEffect, useRef, useState } from "react"
 import { ArrowDownRight, ArrowUpRight, Bell, CalendarDays, CarFront, ChevronRight, ClipboardList, Download, Gift, LayoutDashboard, LogOut, Menu, Plus, Search, X } from "lucide-react"
 import { BookingDialog, formatTime } from "./booking-dialog"
 import { Loyalty } from "./loyalty"
+import { firebaseMode } from "../../lib/foundation"
+import { StaffAccess } from "./staff-access"
+import { DemoLogin } from "./demo-login"
 import { activityLabel, bookingStates, currency, dateLabel, exportReport, localTime, minutesUntil, payments, seed, shiftDay, sources, status, type Booking } from "./data"
 
 const sections = [
@@ -17,6 +20,7 @@ const sections = [
 type Section = typeof sections[number]["key"]
 type Movement = "arrival" | "departure"
 type Alert = { booking: Booking; label: string; time: string; field: Movement; overdue: boolean }
+type BookingNotice = { bookingId: string; time: string; read: boolean }
 const emptyFilters = { search: "", from: "", to: "", status: "", payment: "", source: "" }
 const movementLabels = { arrival: "Confirmă sosirea", departure: "Confirmă plecarea" }
 
@@ -32,7 +36,7 @@ const descriptions: Record<Section, string> = {
   bookings: "Consultă, adaugă și actualizează rezervările parcării.",
   reports: "Consultă programul de intrări și ieșiri pe intervalul selectat.",
   loyalty: "Urmărește clienții recurenți și gestionează beneficiile lor.",
-  alerts: "Verifică sosirile și plecările restante sau apropiate.",
+  alerts: "Urmărește rezervările noi și sosirile sau plecările de verificat.",
 }
 
 function TimeList({ bookings, field, empty, now, parked, onOpen, onConfirm }: {
@@ -61,10 +65,15 @@ function TimeList({ bookings, field, empty, now, parked, onOpen, onConfirm }: {
 }
 
 export default function AdminPage() {
+  return firebaseMode ? <StaffAccess /> : <DemoAdminPage />
+}
+
+function DemoAdminPage() {
   const [now, setNow] = useState("")
   const [bookings, setBookings] = useState<Booking[]>([])
   const [section, setSection] = useState<Section>("today")
-  const [session, setSession] = useState(true)
+  const [session, setSession] = useState(false)
+  const [bookingNotices, setBookingNotices] = useState<BookingNotice[]>([])
   const [menu, setMenu] = useState(false)
   const [selection, setSelection] = useState<string | null>(null)
   const [filters, setFilters] = useState(emptyFilters)
@@ -78,11 +87,16 @@ export default function AdminPage() {
     const time = localTime()
     setNow(time)
     setBookings(seed(time))
+    setBookingNotices([
+      { bookingId: "IAS-103", time, read: false },
+      { bookingId: "IAS-108", time, read: false },
+    ])
     const timer = window.setInterval(() => setNow(localTime()), 30_000)
     return () => window.clearInterval(timer)
   }, [])
 
   const day = now.slice(0, 10)
+  const unreadNotices = bookingNotices.filter(item => !item.read).length
   const active = bookings.filter(booking => !booking.cancelled)
   function schedule(field: Movement) {
     return active.filter(booking => booking[field].startsWith(day) || (needsConfirmation(booking, field) && booking[field] < now))
@@ -142,6 +156,7 @@ export default function AdminPage() {
     const label = activityLabel(previous, booking)
     const updated = { ...booking, activity: [{ label, time: localTime() }, ...(previous?.activity ?? [])] }
     setBookings(current => previous ? current.map(item => item.id === booking.id ? updated : item) : [...current, updated])
+    if (!previous) setBookingNotices(current => [{ bookingId: booking.id, time: localTime(), read: false }, ...current])
     if (showDetails) setSelection(booking.id)
     setNotice(`${label} · ${booking.id}`)
   }
@@ -153,17 +168,7 @@ export default function AdminPage() {
   }
 
   if (!now) return <main className="login"><p>Se încarcă panoul…</p></main>
-  if (!session) return (
-    <main className="login">
-      <div className="panel login-card">
-        <span className="brand-icon"><CarFront size={24} /></span>
-        <h1>Parcare Aeroport Iași</h1>
-        <p>Autentificare în panoul de administrare</p>
-        <div className="notice"><strong>Operator demo</strong><small>Acces demonstrativ cu date fictive.</small></div>
-        <button className="button primary" onClick={() => { setSession(true); navigate("today") }}>Intră în demo</button>
-      </div>
-    </main>
-  )
+  if (!session) return <DemoLogin onLogin={() => { setSession(true); navigate("today") }} />
 
   return (
     <div className="shell">
@@ -178,20 +183,23 @@ export default function AdminPage() {
           {sections.map(({ key, label, icon: Icon }) => (
             <button key={key} aria-current={section === key ? "page" : undefined} onClick={() => navigate(key)}>
               <Icon size={19} />{label}
-              {key === "alerts" && alerts.length > 0 && <span className="nav-count">{alerts.length}</span>}
+              {key === "alerts" && alerts.length + unreadNotices > 0 && <span className="nav-count">{alerts.length + unreadNotices}</span>}
             </button>
           ))}
         </nav>
         <div className="account">
           <div className="avatar">OD</div><div><strong>Operator demo</strong><small>Acces demonstrativ</small></div>
-          <button className="icon-button" aria-label="Deconectare" title="Deconectare" onClick={() => { setMenu(false); setSession(false) }}><LogOut size={18} /></button>
+          <button className="icon-button" aria-label="Deconectare" title="Deconectare" onClick={() => { setSelection(null); setMenu(false); setSession(false) }}><LogOut size={18} /></button>
         </div>
       </aside>
       <div className="workspace">
         <header className="topbar">
           <button className="icon-button mobile-only" aria-label="Deschide meniul" aria-expanded={menu} onClick={() => setMenu(true)}><Menu size={22} /></button>
           <span><CalendarDays size={17} />{dateLabel(day)}</span>
-          <span className="demo-label">Date demonstrative</span>
+          <span className="demo-label"><span className="demo-full">Date demonstrative</span><span className="demo-short">Demo</span></span>
+          <button className="icon-button header-bell" aria-label={`Notificări, ${unreadNotices} necitite`} onClick={() => navigate("alerts")}>
+            <Bell size={21} />{unreadNotices > 0 && <span className="nav-count">{unreadNotices}</span>}
+          </button>
         </header>
         <main className="content">
           <div className="page-title">
@@ -312,6 +320,28 @@ export default function AdminPage() {
             <Loyalty bookings={bookings} onOpen={open} />
           </div>
           {section === "alerts" && (
+            <>
+            <section className="panel" aria-label="Notificări rezervări noi">
+              <div className="panel-heading"><h2>Rezervări noi</h2>
+                <button className="button secondary" disabled={!unreadNotices} onClick={() => setBookingNotices(current => current.map(item => ({ ...item, read: true })))}>Marchează toate ca citite</button>
+              </div>
+              {!bookingNotices.length && <p className="empty">Nicio notificare de rezervare nouă.</p>}
+              {bookingNotices.map(item => {
+                const booking = bookings.find(booking => booking.id === item.bookingId)
+                if (!booking) return null
+                return <div className={`movement-row alert-item${item.read ? "" : " unread-notice"}`} key={item.bookingId} data-testid={`booking-notice-${item.bookingId}`}>
+                  <button className="alert-row" onClick={() => {
+                    setBookingNotices(current => current.map(notice => notice.bookingId === item.bookingId ? { ...notice, read: true } : notice))
+                    open(item.bookingId)
+                  }}>
+                    <span className="metric-icon blue"><Bell size={18} /></span>
+                    <span><strong>Rezervare nouă · {booking.source}</strong><small>{booking.id} · {booking.name} · {booking.plate}</small><small>{formatTime(item.time)} · {item.read ? "Citită" : "Necitită"}</small></span>
+                    <ChevronRight size={17} className="muted" />
+                  </button>
+                  {!item.read && <button className="button secondary movement-action" onClick={() => setBookingNotices(current => current.map(notice => notice.bookingId === item.bookingId ? { ...notice, read: true } : notice))}>Marchează citită</button>}
+                </div>
+              })}
+            </section>
             <section className="panel">
               <h2>Alerte operaționale</h2>
               {!alerts.length && <p className="empty">Nicio alertă de verificat.</p>}
@@ -326,6 +356,7 @@ export default function AdminPage() {
                 </div>
               ))}
             </section>
+            </>
           )}
         </main>
       </div>

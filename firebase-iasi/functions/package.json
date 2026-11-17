@@ -1,0 +1,30 @@
+{
+  "name": "parcare-iasi-foundation",
+  "version": "1.0.0",
+  "private": true,
+  "main": "lib/index.js",
+  "engines": {
+    "node": "22"
+  },
+  "scripts": {
+    "build": "tsc",
+    "test": "node --test --test-concurrency=1 test/*.test.cjs",
+    "staff": "node scripts/staff.cjs"
+  },
+  "dependencies": {
+    "express": "4.22.3",
+    "firebase-admin": "14.5.1",
+    "firebase-functions": "7.4.0",
+    "zod": "4.6.7"
+  },
+  "devDependencies": {
+    "@firebase/rules-unit-testing": "5.0.0",
+    "@types/express": "4.17.21",
+    "@types/node": "22.15.30",
+    "firebase": "12.14.0",
+    "typescript": "5.9.3"
+  },
+  "overrides": {
+    "@grpc/grpc-js": "^1.14.7"
+  }
+}

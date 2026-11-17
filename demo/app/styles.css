@@ -40,6 +40,7 @@ small { display: block; }
 .topbar { display: flex; align-items: center; gap: 12px; background: var(--surface); border-bottom: 1px solid var(--line); height: 79px; padding: 0 clamp(16px, 4vw, 44px); }
 .topbar > span:first-of-type { display: flex; align-items: center; gap: 8px; color: var(--muted); }
 .demo-label { margin-left: auto; color: #624315; background: #fff1d6; border-radius: 30px; padding: 5px 12px; font-size: .8rem; font-weight: 650; white-space: nowrap; }
+.demo-short { display: none; }
 .content { max-width: 1450px; margin: auto; display: grid; gap: 20px; padding: clamp(16px, 4vw, 44px); }
 .page-title { display: flex; align-items: end; justify-content: space-between; gap: 14px; margin-bottom: 4px; }
 .page-title p, .dialog-head p, .login-card p { color: var(--muted); margin-top: 6px; }
@@ -106,6 +107,15 @@ dialog::backdrop { background: #17203980; }
 .mobile-only, .scrim { display: none; }
 .login { min-height: 100dvh; display: grid; place-items: center; padding: 16px; }
 .login-card { display: grid; gap: 12px; padding: 28px; max-width: 440px; }
+.login-card { width: 100%; }
+.login-card .button { width: 100%; }
+.login-card p.error { color: #a02636; }
+.password-field { position: relative; }
+.password-field input { padding-right: 46px; }
+.password-field .icon-button { position: absolute; right: 3px; top: 2px; min-width: 36px; min-height: 36px; }
+.header-bell { flex-shrink: 0; }
+.unread-notice { background: #f1f4ff; }
+.panel-heading .button { font-size: .8rem; }
 @media (max-width: 1130px) {
   .columns { grid-template-columns: 1fr; }
 }
@@ -119,6 +129,10 @@ dialog::backdrop { background: #17203980; }
   .topbar { height: 60px; }
 }
 @media (max-width: 500px) {
+  .demo-full { display: none; }
+  .demo-short { display: inline; }
+  .topbar { gap: 8px; padding: 0 12px; }
+  .panel-heading { flex-wrap: wrap; }
   .page-title { align-items: start; flex-direction: column; }
   .metrics { grid-template-columns: 1fr; gap: 8px; }
   .metric { padding: 11px; }
@@ -179,4 +193,18 @@ input[aria-invalid="true"] { border-color: #a02636; }
   .time-row { flex-wrap: wrap; gap: 6px 9px; }
   .booking-dialog { inset: 0; margin: 0; width: 100%; height: 100dvh; max-width: none; max-height: none; border-radius: 0; }
   .booking-dialog .details { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+.settings-form { display:grid; gap:18px; padding:20px; max-width:900px; }
+.checkbox-label { display:flex; align-items:center; gap:10px; }
+.checkbox-label input { width:20px; min-height:20px; }
+.cache-note { color:var(--muted); font-size:.82rem; padding:12px 16px; }
+.table-wrap small, .text-button small { display:block; color:var(--muted); }
+.button:disabled { opacity:.55; cursor:default; }
+
+@media (max-width: 760px) {
+  .connected-topbar > span:first-of-type { display:none; }
+  .connected-topbar .demo-label { font-size:.7rem; white-space:normal; }
+  .connected-topbar .verify-access { font-size:0; padding:6px; min-width:40px; }
+  .connected-topbar .verify-access::before { content:'↻'; font-size:20px; }
+  .connected-topbar .icon-button { flex-shrink:0; }
 }
